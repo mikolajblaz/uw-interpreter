@@ -46,12 +46,9 @@ VarFunLhs.   FunLhs ::= Var APat [APat]
 ----         FunLhs ::= Pat VarOp Pat
 ----         FunLhs ::= "(" FunLhs ")" APat [APat]
 
-TypedIExp    Exp ::= InfixExp "::" Type	        --- expression type signature
-InfixExp     Exp ::= InfixExp
-
-QOpExp.      InfixExp ::= LExp QOp InfixExp     --- infix operator application
-NegExp.      InfixExp ::= "-" InfixExp          --- prefix negation
-LExp.        InfixExp ::= LExp
+QOpExp.      Exp ::= LExp QOp Exp     --- infix operator application
+NegExp.      Exp ::= "-" Exp          --- prefix negation
+LExp.        Exp ::= LExp
 
 
 Lambda.      LExp ::= "\" [APat] "->" Exp	              --- lambda abstraction
@@ -71,8 +68,8 @@ TupleExp.    AExp ::= "(" Exp "," [ManyExp] ")"	        --- tuple
 ListExp.     AExp ::= "[" [ManyExp] "]"                 --- list
 
 ---- Sections:
-----        |	( infixexp qop )	    (left section)
-----        |	( qop⟨-⟩ infixexp )	    (right section)
+----        |	( exp qop )	    (left section)
+----        |	( qop⟨-⟩ exp )	    (right section)
 
 (:[]).       [ManyExp] ::= Exp
 (:).         [ManyExp] ::= Exp "," [ManyExp]
@@ -118,16 +115,19 @@ QCon.        GCon ::= QCon
 Comma.       Comma ::= ","
 
 ---------------------------------------------------
-VarId      Var ::= VarId           ---- variable
-VarSym     Var ::= "(" VarSym ")"  ---- variable
+VarId.       Var ::= VarId           ---- variable
+VarSym.      Var ::= "(" VarSym ")"  ---- variable
 
 
-qvar      qvar ::= qvarid           ---- qualified variable
-qvar      qvar ::= ( qvarsym )	                  ---- qualified variable
-con      con ::= conid           ---- constructor
-con      con ::= ( consym )	                  ---- constructor
-qcon      qcon ::= qconid           ---- qualified constructor
-qcon      qcon ::= ( gconsym )	                  ---- qualified constructor
+QVarId.      QVar ::= QVarId           ---- qualified variable
+QVarSym.     QVar ::= "(" QVarSym ")"	 ---- qualified variable
+ConId.       Con ::= ConId             ---- constructor
+ConSym.      Con ::= "(" ConSym ")"	   ---- constructor
+QConId.      QCon ::= QConId           ---- qualified constructor
+GConSym.     QCon ::= "(" GConSym ")"	 ---- qualified constructor
+
+
+---- etc.
 varop      varop ::= varsym           ---- variable operator
 varop      varop ::= `  varid `	                  ---- variable operator
 qvarop      qvarop ::= qvarsym           ---- qualified variable operator

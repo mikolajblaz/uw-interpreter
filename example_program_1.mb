@@ -1,17 +1,6 @@
-var n = 10 : Int;
-var a = 3 : Int;
-var result : Int;
+data Tree a = Empty | Node a (Tree a) (Tree a)
 
-if a >= 4 and n != 0 then {}
-  print "OK"
-else
-  result = a + a / n - n;
-  print result
-fi;
+x :: Int
+x = 7
 
-// Funkcja typu (int, bool, (int -> int) -> bool) -> int
-function int f1 (int x, bool y, bool (int (int)))
-
-for i = 3 until (false || i < 5) with i++ do
-  string str = 'AAA';
-    int x = 3;
+y = True :: Bool
