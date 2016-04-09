@@ -1,6 +1,66 @@
+-- Typy algebraiczne
+data TakNie = Tak | Nie
+
+-- ... polimorficzne i rekurencyjne
 data Tree a = Empty | Node a (Tree a) (Tree a)
 
+-- Arytmetyka
+a = 4
+b = (0, 0)
+z = if 3 < 5 then a * 3 + 2 - 4 / (5 - 0) else case b of {
+  (1, 1) -> 9;
+  (k, 0) -> k;
+  _ -> let b = 10 in b;
+}
+
+-- Funkcje 0-argumentowe
 x :: Int
 x = 7
+y = True
 
-y = True :: Bool
+-- Rekurencja
+factorial :: Int -> Int
+factorial 0 = 1
+factorial n = n * factorial (n - 1)
+
+-- Rekonstrukcja typów
+nie Tak = Nie
+-- Błąd: nie Nie = 42
+
+-- Either, Maybe
+or :: Eihter a (Maybe b) -> Bool
+or (Left _) = True
+or (Right Nothing) = False
+or _ = True
+
+-- Pattern matching + polimorfizm + krotki
+fst :: (a, b) -> a
+fst (x, _) = x
+
+-- Pattern matching wielopoziomowy + listy
+allJust :: [Maybe a] -> Bool
+allJust [] = True
+allJust ((Just _):xs) = allJust xs
+allJust (Nothing:_) = False
+
+-- Funkcje wyższego rzędu
+map :: (a -> b) -> [a] -> [b]
+map f [] = []
+map f (x:xs) = (f x) : (map xs)
+
+const :: a -> b -> a
+const x _ = x
+-- Częściowa aplikacja, res = [4, 4, 4]
+res = map (const 3) [1, 2, 3]
+one :: b -> Int
+one = const 1
+
+-- Listy funkcji + funkcje anonimowe
+lf :: [Int -> Bool]
+lf = [\x -> x, \_ -> 3, \x -> 2 * x + 1]
+
+-- Statyczne wiązanie
+st = 2
+f1 x = x + st
+f2 st = f1 (st + st)
+-- f2 100 = 202
