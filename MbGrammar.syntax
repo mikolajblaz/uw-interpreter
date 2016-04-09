@@ -4,13 +4,11 @@ module	->	module modid [exports] where body
 body	->	topdecl1 ; ... ; topdecln	(n>=0)
 topdecl	→	type simpletype = type
         |	data simpletype [= constrs]
-        |	decls
+        |	decl
 
 decls	→	{ decl1 ; … ; decln }	    (n ≥ 0)
-decl	→	gendecl
+decl	→	var :: type	    (type signature)
         |	funlhs = exp [where decls]
-
-gendecl	→	var :: type	    (type signature)
         |		             (empty declaration)
 
 type	→	btype [-> type]	    (function type)

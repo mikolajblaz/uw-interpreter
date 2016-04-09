@@ -1,0 +1,144 @@
+Body.       Body ::= [TopDecl] ;
+
+ZeroData.    TopDecl ::= "data" SimpleType
+ManyData.    TopDecl ::= "data" SimpleType = [Constr]
+Decls.       TopDecl ::= Decl
+
+----??? terminator TopDecl ";";
+
+(:[]).    [Decl] ::= Decl;
+(:).      [Decl] ::= Decl ";" [Decl];
+
+EmptyDecl.   Decl ::= "";                 --- empty declaration
+Signature.   Decl ::= Var "::" Type       --- signature declaration
+FunDecl.     Decl ::= FunLhs "=" Exp      --- function declaration
+
+BType.       Type ::= BType
+FunBType.    Type ::= BType "->" Type	    --- function type
+
+AType.       BType ::= AType
+AppAType.    BType ::= BType AType	    --- type application
+
+GTyCon.      AType ::= GTyCon
+TyVar.       AType ::= TyVar
+TupleType.   AType ::= "(" Type "," [ManyType] ")"	    --- tuple type
+ListType.    AType ::= "[" Type "]"	                    --- list type
+ParenType.   AType ::= "(" Type ")"                     --- parenthesized constructor
+
+QTyCon.      GTyCon ::= QTyCon
+UnitCon.     GTyCon ::= "()"                            --- unit constructor
+ListCon.     GTyCon ::= "[]"                            --- list constructor
+FunCon.      GTyCon ::= "(->)"                          --- function constructor
+TupleCon.    GTyCon ::= "(" Comma [ManyComma] ")"       --- tuple constructor
+
+(:[]).       [ManyType] ::= Type;
+(:).         [ManyType] ::= Type "," [ManyType];
+
+SimpleType.  Simpletype	::=	TyCon TyVar1 … TyVark	    (k ≥ 0)
+
+(:[]).    [Constr] ::= Constr
+(:[]).    [Constr] ::= Constr "|" [Constr]
+
+Con.      Constr ::= Con ATtype1 … ATypek	    --- arity con = k, k ≥ 0
+ConOp.    Constr ::= BType ConOp BType	      --- infix conop
+
+VarFunLhs.   FunLhs ::= Var APat [APat]
+----         FunLhs ::= Pat VarOp Pat
+----         FunLhs ::= "(" FunLhs ")" APat [APat]
+
+TypedIExp    Exp ::= InfixExp "::" Type	        --- expression type signature
+InfixExp     Exp ::= InfixExp
+
+QOpExp.      InfixExp ::= LExp QOp InfixExp     --- infix operator application
+NegExp.      InfixExp ::= "-" InfixExp          --- prefix negation
+LExp.        InfixExp ::= LExp
+
+
+Lambda.      LExp ::= "\" [APat] "->" Exp	              --- lambda abstraction
+Let.         LExp ::= "let" [Decls] "in" Exp	          --- let expression
+If.          LExp ::= "if" Exp "then" Exp "else" Exp	  --- conditional
+Case.        LExp ::= "case" Exp "of" "{" [Alt] "}"	    --- case expression
+FExp.        LExp ::= FExp
+
+FApp.        FExp	::= FExp AExp                         --- function application
+AExp.        FExp	::= AExp
+
+QVar.        AExp ::= qvar	                            --- variable
+GCon.        AExp ::= gcon	                            --- general constructor
+Literal      AExp ::= Literal
+ParExp.      AExp ::= "(" Exp ")"	                      --- parenthesized expression
+TupleExp.    AExp ::= "(" Exp "," [ManyExp] ")"	        --- tuple
+ListExp.     AExp ::= "[" [ManyExp] "]"                 --- list
+
+---- Sections:
+----        |	( infixexp qop )	    (left section)
+----        |	( qop⟨-⟩ infixexp )	    (right section)
+
+(:[]).       [ManyExp] ::= Exp
+(:).         [ManyExp] ::= Exp "," [ManyExp]
+
+(:[]).       [Alt] ::= Alt
+(:).         [Alt] ::= Alt ";" [Alt]
+
+
+Alt.         Alt ::= Pat "->" Exp
+EmptyAlt.    Alt ::= ""                                 --- empty alternative
+
+
+---- Patterns
+QLPat.       Pat ::= LPat QConOp Pat	                  --- infix constructor
+LPat.        Pat ::= LPat
+
+APat.        LPat ::= APat
+NegInteger.  LPat ::= "-" Integer
+NegFloat.    LPat ::= "-" Float
+GConPat.     LPat ::= GCon [APat]
+
+(:[]).       [APat] ::= APat
+(:).         [APat] ::= APat [APat]
+
+Var.         APat ::= Var
+GCon.        APat ::= GCon                              --- arity gcon = 0
+Literal.     APat ::= Literal
+WildCard.    APat ::= "_"
+ParPat.      APat ::= "(" Pat ")"
+TuplePat.    APat ::= "(" Pat "," [ManyPat] ")"	        --- tuple
+ListPat.     APat ::= "[" [ManyPat] "]"                 --- list
+
+(:[]).       [ManyPat] ::= Pat
+(:).         [ManyPat] ::= Pat "," [ManyPat]
+
+Unit.        GCon ::= "()"
+ListCon.     GCon ::= "[]"
+QCon.        GCon ::= QCon
+-------- TupleCon.     GCon ::= "(" Comma [ManyCommas] ")"
+
+(:[]).       [ManyCommas] ::= Comma
+(:).         [ManyCommas] ::= Comma [ManyCommas]
+Comma.       Comma ::= ","
+
+---------------------------------------------------
+VarId      Var ::= VarId           ---- variable
+VarSym     Var ::= "(" VarSym ")"  ---- variable
+
+
+qvar      qvar ::= qvarid           ---- qualified variable
+qvar      qvar ::= ( qvarsym )	                  ---- qualified variable
+con      con ::= conid           ---- constructor
+con      con ::= ( consym )	                  ---- constructor
+qcon      qcon ::= qconid           ---- qualified constructor
+qcon      qcon ::= ( gconsym )	                  ---- qualified constructor
+varop      varop ::= varsym           ---- variable operator
+varop      varop ::= `  varid `	                  ---- variable operator
+qvarop      qvarop ::= qvarsym           ---- qualified variable operator
+qvarop      qvarop ::= `  qvarid `	                  ---- qualified variable operator
+conop      conop ::= consym           ---- constructor operator
+conop      conop ::= `  conid `	                  ---- constructor operator
+qconop      qconop ::= gconsym           ---- qualified constructor operator
+qconop      qconop ::= `  qconid `	                  ---- qualified constructor operator
+op      op ::= varop           ---- operator
+op      op ::= conop	                  ---- operator
+qop      qop ::= qvarop           ---- qualified operator
+qop      qop ::= qconop	                  ---- qualified operator
+gconsym	::=	":"
+gconsym ::= qconsym
