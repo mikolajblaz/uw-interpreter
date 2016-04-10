@@ -104,7 +104,35 @@ TupleCon.    GCon ::= "(" Comma [ManyCommas] ")"
 (:).         [ManyCommas] ::= Comma [ManyCommas]
 Comma.       Comma ::= ","
 
-VarId.       Var ::= VarId             ---- variable
-ConId.       Con ::= ConId             ---- constructor
 
----- ArithOp      Op ::= varop           ---- operator
+
+
+
+------------ Lexical Syntax
+Var  ::=   lower { lower | upper | digit }
+Con  ::=   large { lower | upper | digit }
+
+Lower      ::=   a | b | c | ... | z
+Upper      ::=   A | B | C | ... | Z
+Digit      ::=   0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+      (but reserved words (not allowed as variable names) include:
+      case   class   data   default   deriving   do   else
+      if   import   in   infix   infixl   infixr   instance
+      let   module   newtype   of   then   type   where   )
+
+Symbol    ::=   ! | # | $ | % | & | * | + | . | / | < | = | > | ? | @  | \ | ^ | | | - | ~
+
+Op ::= + | - | * | /
+
+Literal    ::=   boollit   |   intlit   |   charlit   |   stringlit
+
+boollit    ::=   True  |  False
+
+intlit       ::=   Digit { Digit }
+
+charlit           ::=   ' nonapost '
+nonapost     ::=   (any character except apostrophe)
+
+stringlit         ::=   " { nonqchar } "
+nonqchar     ::=   (any character except quote mark)
+(characters include "escaped" characters: \\, \', \", \t, \n )
