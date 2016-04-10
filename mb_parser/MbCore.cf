@@ -12,6 +12,8 @@ Signature.   Decl ::= Var "::" Type ;      --- signature declaration
 FunDecl.     Decl ::= FunLhs "=" Exp ;     --- function declaration
 PatDecl.     Decl ::= Pat "=" Exp ;        --- pattern declaration
 
+ZeroArgFun.  FunLhs ::= Var ;
+ManyArgFun.  FunLhs ::= Var [APat] ;
 
 ---- Types ----
 
@@ -34,9 +36,6 @@ UnitCon.     GTyCon ::= "()" ;                          --- unit constructor
 ListCon.     GTyCon ::= "[]" ;                          --- list constructor
 FunCon.      GTyCon ::= "(->)" ;                        --- function constructor
 TupleCon.    GTyCon ::= "(" [Comma] ")" ;               --- tuple constructor
-
-Comma.       Comma ::= "," ;
-separator nonempty Comma "" ;
 
 TyCon.       SimpleType	::=	TyCon [TyVar] ;
 Con.         Constr ::= Con [AType] ;
@@ -67,12 +66,38 @@ ParExp.      AExp ::= "(" Exp ")" ;                     --- parenthesized expres
 TupleExp.    AExp ::= "(" Exp "," [Exp] ")" ;           --- tuple
 ListExp.     AExp ::= "[" [Exp] "]" ;                   --- list
 
-separator nonempty Exp "," ;
+Alt.         Alt ::= Pat "->" Exp ;
+EmptyAlt.    Alt ::= "" ;                               --- empty alternative
 
+separator nonempty Exp "," ;
+separator Alt ";" ;
 
 ---- Patterns ----
-ZeroArgFun.  FunLhs ::= Var ;
-ManyArgFun.  FunLhs ::= Var [APat] ;
 
 separator nonempty APat "" ;
-separator Alt ";" ;
+
+APat.        Pat ::= APat ;
+NegInteger.  Pat ::= "-" Integer ;
+NegFloat.    Pat ::= "-" Float ;
+GConPat.     Pat ::= GCon [APat] ;                      --- arity gcon > 0
+
+Var.         APat ::= Var ;
+GCon.        APat ::= GCon ;                            --- arity gcon = 0
+Literal.     APat ::= Literal ;
+WildCard.    APat ::= "_" ;
+ParPat.      APat ::= "(" Pat ")" ;
+TuplePat.    APat ::= "(" Pat "," [Pat] ")"	;           --- tuple
+ListPat.     APat ::= "[" [Pat] "]" ;                   --- list
+
+separator nonempty Pat "," ;
+
+Con.         GCon ::= Con ;
+Unit.        GCon ::= "()" ;
+ListCon.     GCon ::= "[]" ;
+TupleCon.    GCon ::= "(" [Comma] ")" ;
+
+Comma.       Comma ::= "," ;
+separator nonempty Comma "" ;
+
+
+---- Lexical syntax ----
