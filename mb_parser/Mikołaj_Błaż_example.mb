@@ -1,3 +1,5 @@
+-- Przykładowy plik w języku MB prezentujący możliwe konstrukcje
+
 -- Typy algebraiczne
 data TakNie = Tak | Nie;
 
