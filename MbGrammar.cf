@@ -40,11 +40,8 @@ SimpleType.  Simpletype	::=	TyCon TyVar1 … TyVark	    (k ≥ 0)
 (:[]).    [Constr] ::= Constr "|" [Constr]
 
 Con.      Constr ::= Con ATtype1 … ATypek	    --- arity con = k, k ≥ 0
-ConOp.    Constr ::= BType ConOp BType	      --- infix conop
 
 VarFunLhs.   FunLhs ::= Var APat [APat]
-----         FunLhs ::= Pat VarOp Pat
-----         FunLhs ::= "(" FunLhs ")" APat [APat]
 
 QOpExp.      Exp ::= LExp QOp Exp     --- infix operator application
 NegExp.      Exp ::= "-" Exp          --- prefix negation
@@ -60,16 +57,12 @@ FExp.        LExp ::= FExp
 FApp.        FExp	::= FExp AExp                         --- function application
 AExp.        FExp	::= AExp
 
-QVar.        AExp ::= qvar	                            --- variable
-GCon.        AExp ::= gcon	                            --- general constructor
+Var.         AExp ::= Var	                            --- variable
+GCon.        AExp ::= GCon	                            --- general constructor
 Literal      AExp ::= Literal
 ParExp.      AExp ::= "(" Exp ")"	                      --- parenthesized expression
 TupleExp.    AExp ::= "(" Exp "," [ManyExp] ")"	        --- tuple
 ListExp.     AExp ::= "[" [ManyExp] "]"                 --- list
-
----- Sections:
-----        |	( exp qop )	    (left section)
-----        |	( qop⟨-⟩ exp )	    (right section)
 
 (:[]).       [ManyExp] ::= Exp
 (:).         [ManyExp] ::= Exp "," [ManyExp]
@@ -83,13 +76,10 @@ EmptyAlt.    Alt ::= ""                                 --- empty alternative
 
 
 ---- Patterns
-QLPat.       Pat ::= LPat QConOp Pat	                  --- infix constructor
-LPat.        Pat ::= LPat
-
-APat.        LPat ::= APat
-NegInteger.  LPat ::= "-" Integer
-NegFloat.    LPat ::= "-" Float
-GConPat.     LPat ::= GCon [APat]
+APat.        Pat ::= APat
+NegInteger.  Pat ::= "-" Integer
+NegFloat.    Pat ::= "-" Float
+GConPat.     Pat ::= GCon [APat]
 
 (:[]).       [APat] ::= APat
 (:).         [APat] ::= APat [APat]
@@ -105,40 +95,16 @@ ListPat.     APat ::= "[" [ManyPat] "]"                 --- list
 (:[]).       [ManyPat] ::= Pat
 (:).         [ManyPat] ::= Pat "," [ManyPat]
 
+Con.         GCon ::= Con
 Unit.        GCon ::= "()"
 ListCon.     GCon ::= "[]"
-QCon.        GCon ::= QCon
--------- TupleCon.     GCon ::= "(" Comma [ManyCommas] ")"
+TupleCon.    GCon ::= "(" Comma [ManyCommas] ")"
 
 (:[]).       [ManyCommas] ::= Comma
 (:).         [ManyCommas] ::= Comma [ManyCommas]
 Comma.       Comma ::= ","
 
----------------------------------------------------
-VarId.       Var ::= VarId           ---- variable
-VarSym.      Var ::= "(" VarSym ")"  ---- variable
-
-
-QVarId.      QVar ::= QVarId           ---- qualified variable
-QVarSym.     QVar ::= "(" QVarSym ")"	 ---- qualified variable
+VarId.       Var ::= VarId             ---- variable
 ConId.       Con ::= ConId             ---- constructor
-ConSym.      Con ::= "(" ConSym ")"	   ---- constructor
-QConId.      QCon ::= QConId           ---- qualified constructor
-GConSym.     QCon ::= "(" GConSym ")"	 ---- qualified constructor
 
-
----- etc.
-varop      varop ::= varsym           ---- variable operator
-varop      varop ::= `  varid `	                  ---- variable operator
-qvarop      qvarop ::= qvarsym           ---- qualified variable operator
-qvarop      qvarop ::= `  qvarid `	                  ---- qualified variable operator
-conop      conop ::= consym           ---- constructor operator
-conop      conop ::= `  conid `	                  ---- constructor operator
-qconop      qconop ::= gconsym           ---- qualified constructor operator
-qconop      qconop ::= `  qconid `	                  ---- qualified constructor operator
-op      op ::= varop           ---- operator
-op      op ::= conop	                  ---- operator
-qop      qop ::= qvarop           ---- qualified operator
-qop      qop ::= qconop	                  ---- qualified operator
-gconsym	::=	":"
-gconsym ::= qconsym
+---- ArithOp      Op ::= varop           ---- operator

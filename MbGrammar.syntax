@@ -31,17 +31,14 @@ gtycon	→	qtycon
 simpletype	→	tycon tyvar1 … tyvark	    (k ≥ 0)
 constrs	→	constr1 | … | constrn	    (n ≥ 1)
 constr	→	con atype1 … atypek	    (arity con  =  k, k ≥ 0)
-        |	btype conop btype	    (infix conop)
 
 
 funlhs	→	var apat { apat }
-        |	pat varop pat
-        |	( funlhs ) apat { apat }
 
 exp	→	infixexp :: type	    (expression type signature)
         |	infixexp
 
-infixexp	→	lexp qop infixexp	    (infix operator application)
+infixexp	→	lexp op infixexp	    (infix operator application)
         |	- infixexp	    (prefix negation)
         |	lexp
 
@@ -53,24 +50,19 @@ lexp	→	\ apat1 … apatn -> exp	    (lambda abstraction, n ≥ 1)
 
 fexp	→	[fexp] aexp	    (function application)
 
-aexp	→	qvar	    (variable)
+aexp	→	var	    (variable)
         |	gcon	    (general constructor)
         |	literal
         |	( exp )	    (parenthesized expression)
         |	( exp1 , … , expk )	    (tuple, k ≥ 2)
         |	[ exp1 , … , expk ]	    (list, k ≥ 1)
         |	[ exp1 [, exp2] .. [exp3] ]	    (arithmetic sequence)
-        |	( infixexp qop )	    (left section)
-        |	( qop⟨-⟩ infixexp )	    (right section)
 
 alts  	→	alt1 ; … ; altn	    (n ≥ 1)
 alt	    →	pat -> exp [where decls]
         |		    (empty alternative)
 
-pat	→	lpat qconop pat	    (infix constructor)
-        |	lpat
-
-lpat	→	apat
+pat	→	apat
         |	- (integer | float)	    (negative literal)
         |	gcon apat1 … apatk	    (arity gcon  =  k, k ≥ 1)
 
@@ -85,16 +77,8 @@ apat	→	var
 gcon	→	()
         |	[]
         |	(,{,})
-        |	qcon
+        |	con
 
 var	→	varid | ( varsym )	    (variable)
-qvar	→	qvarid | ( qvarsym )	    (qualified variable)
 con	→	conid | ( consym )	    (constructor)
-qcon	→	qconid | ( gconsym )	    (qualified constructor)
-varop	→	varsym | `  varid `	    (variable operator)
-qvarop	→	qvarsym | `  qvarid `	    (qualified variable operator)
-conop	→	consym | `  conid `	    (constructor operator)
-qconop	→	gconsym | `  qconid `	    (qualified constructor operator)
 op	→	varop | conop	    (operator)
-qop	→	qvarop | qconop	    (qualified operator)
-gconsym	→	: | qconsym

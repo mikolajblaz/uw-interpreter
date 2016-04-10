@@ -25,7 +25,8 @@ factorial n = n * factorial (n - 1)
 
 -- Rekonstrukcja typów
 nie Tak = Nie
--- Błąd: nie Nie = 42
+-- Wtedy błąd powoduje np.:
+-- nie Nie = 42
 
 -- Either, Maybe
 or :: Eihter a (Maybe b) -> Bool
@@ -33,15 +34,23 @@ or (Left _) = True
 or (Right Nothing) = False
 or _ = True
 
+-- Listy
+-- data List a = Nil | Cons a (List a)
+-- Lukier syntaktyczny: List a == [a], Nil == []
+-- konstrukcja tablic przez: [, , ]
+head :: [a] -> a
+head (x:_) = x
+oneInt = head [1, 2, 3, 4]
+
 -- Pattern matching + polimorfizm + krotki
 fst :: (a, b) -> a
 fst (x, _) = x
 
--- Pattern matching wielopoziomowy + listy
-allJust :: [Maybe a] -> Bool
-allJust [] = True
-allJust ((Just _):xs) = allJust xs
-allJust (Nothing:_) = False
+-- Pattern matching wielopoziomowy
+sumTuple :: (Maybe Int, Tree Int) -> Maybe Int
+sumTuple (Nothing, _)  = Nothing
+sumTuple (_, Empty) = Nothing
+sumTuple (Just a, Node b _ _) = Just (a + b)
 
 -- Funkcje wyższego rzędu
 map :: (a -> b) -> [a] -> [b]
