@@ -1,0 +1,36 @@
+Opis języka MB
+Autor: Mikołaj Błaż
+
+1. Język MB jest językiem funkcyjnym wzorowanym na języku Haskell.
+Program w języku MB jest poprawnym syntaktycznie programem w Haskellu (choć nie
+na odwrót).
+
+Gramtyka bezkontekstowa (kompilowalna za pomocą programu BNFC)
+języka MB znajduje się w pliku "Mikołaj_Błaż_core.cf",
+przykładowy program w pliku "Mikołaj_Błaż_example.mb".
+
+2. Na język MB składają się:
+- wbudowane typy Int, Bool, Char, String oraz List, Maybe, Either
+- wyrażenia arytmetyczne i logiczne
+- wieloargumentowe funkcje (wyższego rzędu) z rekurencją i częściową aplikacją
+- polimorficzne i rekurencyjne typy algebraiczne
+- wielopoziomowy pattern matching
+- listy dowolnego typu, z lukrem syntaktycznym do definiowania
+  typu List (np. List Int == [Int]) i konstruowania list (np. [1, 2, 3])
+
+Zmienne mają wiązanie statyczne, typy nie muszą być podawane, ponieważ język
+zawiera rekonstrukcję typów.
+
+Identyfikatory zmiennych muszą zaczynać się od małej litery, identyfikatory
+typów i konstruktorów od wielkiej litery.
+
+3. Warunki kontekstowe języka MB:
+
+Każdy wykonywalny program musi posiadać funkcję "main :: String -> String"
+(jest to funkcja analogiczna do funkcji "interact" w Haskellu).
+Będzie ona wykonana z wejściem standardowym jako argumentem (lub zawartością
+pliku podanego jako argument interpretera), zaś jej wynik będzie wypisywany
+na standardowe wyjście.
+
+Każda zmienna w programie może być zdefniowana tylko raz (z wyjątkiem
+definicji funkcji dla jej różnych argumentów).

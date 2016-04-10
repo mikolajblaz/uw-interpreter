@@ -39,7 +39,7 @@ or _ = True;
 -- Listy
 -- data List a = Nil | Cons a (List a)
 -- Lukier syntaktyczny: List a == [a], Nil == []
--- konstrukcja tablic przez: [, , ]
+-- konstrukcja tablic przez: [_,_,_,...]
 head :: [a] -> a;
 head (Cons x _) = x;
 oneInt = head [1, 2, 3, 4];
