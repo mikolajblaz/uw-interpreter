@@ -137,7 +137,7 @@ ListCon.     GCon ::= "[]" ;
 TupleCon.    GCon ::= "(" [Comma] ")" ;
 
 Comma.       Comma ::= "," ;
-separator nonempty Comma "@" ;
+separator nonempty Comma "" ;
 
 
 
