@@ -1,9 +1,8 @@
-module	->	module modid [exports] where body
-        |	body
+--- module	->	module modid [exports] where body
+---        |	body
 
 body	->	topdecl1 ; ... ; topdecln	(n>=0)
-topdecl	→	type simpletype = type
-        |	data simpletype [= constrs]
+topdecl	→	data simpletype = constrs
         |	decl
 
 decls	→	{ decl1 ; … ; decln }	    (n ≥ 0)
