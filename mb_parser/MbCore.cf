@@ -7,10 +7,10 @@ separator TopDecl ";" ;
 separator Decl ";" ;
 separator nonempty Constr "|" ;
 
-EmptyDecl.   Decl ::= "" ;                 --- empty declaration
-Signature.   Decl ::= Var "::" Type ;      --- signature declaration
-FunDecl.     Decl ::= FunLhs "=" Exp ;     --- function declaration
-PatDecl.     Decl ::= Pat "=" Exp ;        --- pattern declaration
+EmptyDecl.   Decl ::= "" ;                              --- empty declaration
+Signature.   Decl ::= Var "::" Type ;                   --- signature declaration
+FunDecl.     Decl ::= FunLhs "=" Exp ;                  --- function declaration
+PatDecl.     Decl ::= Pat "=" Exp ;                     --- pattern declaration
 
 ZeroArgFun.  FunLhs ::= Var ;
 ManyArgFun.  FunLhs ::= Var [APat] ;
@@ -18,10 +18,10 @@ ManyArgFun.  FunLhs ::= Var [APat] ;
 ---- Types ----
 
 BType.       Type ::= BType ;
-FunBType.    Type ::= BType "->" Type ;    --- function type
+FunBType.    Type ::= BType "->" Type ;                 --- function type
 
 AType.       BType ::= AType ;
-AppAType.    BType ::= BType AType ;       --- type application
+AppAType.    BType ::= BType AType ;                    --- type application
 
 GTyCon.      AType ::= GTyCon ;
 TyVar.       AType ::= TyVar ;
@@ -31,7 +31,7 @@ ParenType.   AType ::= "(" Type ")" ;                   --- parenthesized constr
 
 separator nonempty Type "," ;
 
-QTyCon.      GTyCon ::= QTyCon ;
+TyCon.       GTyCon ::= TyCon ;
 UnitCon.     GTyCon ::= "()" ;                          --- unit constructor
 ListCon.     GTyCon ::= "[]" ;                          --- list constructor
 FunCon.      GTyCon ::= "(->)" ;                        --- function constructor
@@ -42,11 +42,13 @@ Con.         Constr ::= Con [AType] ;
 separator TyVar "" ;
 separator AType "" ;
 
+VarTyCon.    TyCon ::= Var ;
+VarTyVar.    TyVar ::= Var ;
 
 ---- Expressions ----
 
-QOpExp.      Exp ::= LExp QOp Exp ;     --- infix operator application
-NegExp.      Exp ::= "-" Exp ;          --- prefix negation
+OpExp.       Exp ::= LExp Op Exp ;                      --- operator application
+NegExp.      Exp ::= "-" Exp ;                          --- prefix negation
 LExp.        Exp ::= LExp ;
 
 
@@ -72,13 +74,16 @@ EmptyAlt.    Alt ::= "" ;                               --- empty alternative
 separator nonempty Exp "," ;
 separator Alt ";" ;
 
+---- TODO!
+token Op ('+' | '-' | '*' | '/') ;
+
 ---- Patterns ----
 
 separator nonempty APat "" ;
 
 APat.        Pat ::= APat ;
 NegInteger.  Pat ::= "-" Integer ;
-NegFloat.    Pat ::= "-" Float ;
+NegDouble.    Pat ::= "-" Double ;
 GConPat.     Pat ::= GCon [APat] ;                      --- arity gcon > 0
 
 Var.         APat ::= Var ;
@@ -101,3 +106,18 @@ separator nonempty Comma "" ;
 
 
 ---- Lexical syntax ----
+token Var (lower ( letter | digit )* ) ;
+token Con (upper ( letter | digit )* ) ;
+
+---- reserved words:  case  data  else  if  in  let  of  then
+
+BoolLit.     Literal ::= BoolLit ;
+IntLit.      Literal ::= Integer ;
+CharLit.     Literal ::= Char ;
+StringLit.   Literal ::= String ;
+
+True.        BoolLit ::= "True" ;
+False.       BoolLit ::= "False" ;
+
+---- Comments ----
+comment "--" ;
