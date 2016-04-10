@@ -1,16 +1,22 @@
+---- MB Language Context-Free Grammar ----
+
+-- Author: Mikołaj Błaż
+
+-- Based on Haskell grammar available in:
+-- The Haskell 98 Report
+-- (https://www.haskell.org/onlinereport/syntax-iso.html)
+
+
+---- Top constructs ----
+
 Body.        Body ::= [TopDecl] ;
 
 Data.        TopDecl ::= "data" TyConstr "=" [Constr] ;
 Decl.        TopDecl ::= Decl ;
 
-DataTyCon.   TyConstr	::=	TyCon [TyVar] ;
-DataCon.     Constr ::= Con [AType] ;
-
 separator TopDecl ";" ;
 separator Decl ";" ;
 separator nonempty Constr "|" ;
-separator TyVar "" ;
-separator AType "" ;
 
 EmptyDecl.   Decl ::= "" ;                              --- empty declaration
 Signature.   Decl ::= Var "::" Type ;                   --- signature declaration
@@ -20,7 +26,16 @@ PatDecl.     Decl ::= Pat "=" Exp ;                     --- pattern declaration
 ZeroArgFun.  FunLhs ::= Var ;
 ManyArgFun.  FunLhs ::= Var [APat] ;
 
+
+
 ---- Types ----
+
+DataTyCon.   TyConstr	::=	TyCon [TyVar] ;
+DataCon.     Constr ::= Con [AType] ;
+
+separator TyVar "" ;
+separator AType "" ;
+
 
 BType.       Type ::= BType ;
 FunBType.    Type ::= BType "->" Type ;                 --- function type
@@ -43,18 +58,14 @@ FunTyCon.    GTyCon ::= "(->)" ;                        --- function constructor
 TupleTyCon.  GTyCon ::= "(" [Comma] ")" ;               --- tuple constructor
 
 
+
 ---- Expressions ----
 
-OpExp.       Exp ::= LExp Op Exp ;                      --- operator application
-NegExp.      Exp ::= "-" Exp ;                          --- prefix negation
-LExp.        Exp ::= LExp ;
-
-
-Lambda.      LExp ::= "\\" [APat] "->" Exp ;            --- lambda abstraction
-Let.         LExp ::= "let" [Decl] "in" Exp	;           --- let expression
-If.          LExp ::= "if" Exp "then" Exp "else" Exp ;  --- conditional
-Case.        LExp ::= "case" Exp "of" "{" [Alt] "}" ;   --- case expression
-FExp.        LExp ::= FExp ;
+Lambda.      Exp5 ::= "\\" [APat] "->" Exp ;            --- lambda abstraction
+Let.         Exp5 ::= "let" [Decl] "in" Exp	;           --- let expression
+If.          Exp5 ::= "if" Exp "then" Exp "else" Exp ;  --- conditional
+Case.        Exp5 ::= "case" Exp "of" "{" [Alt] "}" ;   --- case expression
+FExp.        Exp5 ::= FExp ;
 
 FApp.        FExp	::= FExp AExp ;                       --- function application
 AExp.        FExp	::= AExp ;
@@ -72,16 +83,45 @@ EmptyAlt.    Alt ::= "" ;                               --- empty alternative
 separator nonempty Exp "," ;
 separator Alt ";" ;
 
----- TODO!
-token Op ('+' | '-' | '*' | '/') ;
+_.           Exp  ::= Exp0 ;
+_.           Exp0 ::= Exp1 ;
+_.           Exp1 ::= Exp2 ;
+_.           Exp2 ::= Exp3 ;
+_.           Exp3 ::= Exp4 ;
+_.           Exp4 ::= Exp5 ;
+
+
+
+---- Operators ----
+-- right-associative
+OOr.         Exp0 ::= Exp1 "||" Exp0 ;
+OAnd.        Exp1 ::= Exp2 "&&" Exp1 ;
+
+-- non-associative
+EOpE.        Exp2 ::= Exp3 CompOp Exp3 ;
+
+-- left-associative
+OAdd.        Exp3 ::= Exp3 "+" Exp4 ;
+OSub.        Exp3 ::= Exp3 "-" Exp4 ;
+
+OTimes.      Exp4 ::= Exp4 "*" Exp5 ;
+ODiv.        Exp4 ::= Exp4 "/" Exp5 ;
+
+-- comparison operators
+OEq.         CompOp ::= "==" ;
+ONeq.        CompOp ::= "/=" ;
+OLt.         CompOp ::= "<" ;
+OLte.        CompOp ::= "<=" ;
+OGt.         CompOp ::= ">" ;
+OGte.        CompOp ::= ">=" ;
+
+
 
 ---- Patterns ----
 
 separator nonempty APat "" ;
 
 APat.        Pat ::= APat ;
-NegIntPat.   Pat ::= "-" Integer ;
-NegDoublePat.Pat ::= "-" Double ;
 ManyGConPat. Pat ::= GCon [APat] ;                      --- arity gcon > 0
 
 VarPat.      APat ::= Var ;
@@ -103,22 +143,18 @@ Comma.       Comma ::= "," ;
 separator nonempty Comma "" ;
 
 
+
 ---- Lexical syntax ----
 token Var (lower ( letter | digit )* ) ;
 token Con (upper ( letter | digit )* ) ;
 
-VarTyCon.    TyCon ::= Var ;
+ConTyCon.    TyCon ::= Con ;
 VarTyVar.    TyVar ::= Var ;
 
----- reserved words:  case  data  else  if  in  let  of  then
-
-BoolLit.     Literal ::= BoolLit ;
 IntLit.      Literal ::= Integer ;
+DoubleLit.   Literal ::= Double ;
 CharLit.     Literal ::= Char ;
 StringLit.   Literal ::= String ;
-
-True.        BoolLit ::= "True" ;
-False.       BoolLit ::= "False" ;
 
 ---- Comments ----
 comment "--" ;
