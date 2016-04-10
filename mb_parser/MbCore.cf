@@ -2,8 +2,7 @@
 
 -- Author: Mikołaj Błaż
 
--- Based on Haskell grammar available in:
--- The Haskell 98 Report
+-- Based on Haskell grammar available in "The Haskell 98 Report"
 -- (https://www.haskell.org/onlinereport/syntax-iso.html)
 
 
