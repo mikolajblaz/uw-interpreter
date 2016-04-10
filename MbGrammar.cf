@@ -1,4 +1,4 @@
-Body.       Body ::= [TopDecl] ;
+Body.        Body ::= [TopDecl] ;
 
 ZeroData.    TopDecl ::= "data" SimpleType
 ManyData.    TopDecl ::= "data" SimpleType = [Constr]
@@ -6,12 +6,13 @@ Decls.       TopDecl ::= Decl
 
 ----??? terminator TopDecl ";";
 
-(:[]).    [Decl] ::= Decl;
-(:).      [Decl] ::= Decl ";" [Decl];
+(:[]).       [Decl] ::= Decl;
+(:).         [Decl] ::= Decl ";" [Decl];
 
 EmptyDecl.   Decl ::= "";                 --- empty declaration
 Signature.   Decl ::= Var "::" Type       --- signature declaration
 FunDecl.     Decl ::= FunLhs "=" Exp      --- function declaration
+PatDecl.     Decl ::= Pat "=" Exp         --- pattern declaration
 
 BType.       Type ::= BType
 FunBType.    Type ::= BType "->" Type	    --- function type
@@ -36,10 +37,10 @@ TupleCon.    GTyCon ::= "(" Comma [ManyComma] ")"       --- tuple constructor
 
 SimpleType.  Simpletype	::=	TyCon TyVar1 … TyVark	    (k ≥ 0)
 
-(:[]).    [Constr] ::= Constr
-(:[]).    [Constr] ::= Constr "|" [Constr]
+(:[]).       [Constr] ::= Constr
+(:[]).       [Constr] ::= Constr "|" [Constr]
 
-Con.      Constr ::= Con ATtype1 … ATypek	    --- arity con = k, k ≥ 0
+Con.         Constr ::= Con ATtype1 … ATypek	    --- arity con = k, k ≥ 0
 
 VarFunLhs.   FunLhs ::= Var APat [APat]
 
