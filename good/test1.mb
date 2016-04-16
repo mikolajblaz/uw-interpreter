@@ -1,0 +1,21 @@
+-- Arytmetyka
+
+a :: Int;
+b :: Int;
+z :: Int;
+d :: Int;
+
+a = 4;
+b = 3;
+z = if 3 < 5 then a * 3 + 2 - 4 / (5 - 0) else 10 end;
+
+main :: Int;
+main = 3 + let { x = 3 } in a + b + z + x end;
+
+d = if 3 <= 4
+  then 1 + (-4) / (-3)
+  else if 3 == 4 || 9 /= 2
+    then let {x = 4} in x end
+    else 0 / 7
+    end
+  end;
