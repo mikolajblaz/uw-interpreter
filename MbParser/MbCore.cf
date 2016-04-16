@@ -20,11 +20,8 @@ separator Decl ";" ;
 separator nonempty Constr "|" ;
 
 Signature.   Decl ::= Var "::" Type ;                   --- signature declaration
-FunDecl.     Decl ::= FunLhs "=" Exp ;                  --- function declaration
+FunDecl.     Decl ::= Var [APat] "=" Exp ;              --- function declaration
 PatDecl.     Decl ::= Pat "=" Exp ;                     --- pattern declaration
-
-ZeroArgFun.  FunLhs ::= Var ;
-ManyArgFun.  FunLhs ::= Var [APat] ;
 
 
 
