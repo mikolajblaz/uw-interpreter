@@ -8,12 +8,14 @@
 
 ---- Top constructs ----
 
+entrypoints Body ;
+
 Body.        Body ::= [TopDecl] ;
 
-Data.        TopDecl ::= "data" TyConstr "=" [Constr] ;
+DataDecl.    TopDecl ::= "data" TyConstr "=" [Constr] ;
 Decl.        TopDecl ::= Decl ;
 
-separator TopDecl ";" ;
+terminator TopDecl ";" ;
 separator Decl ";" ;
 separator nonempty Constr "|" ;
 
@@ -60,7 +62,7 @@ TupleTyCon.  GTyCon ::= "(" [Comma] ")" ;               --- tuple constructor
 ---- Expressions ----
 
 Lambda.      Exp5 ::= "\\" [APat] "->" Exp ;            --- lambda abstraction
-Let.         Exp5 ::= "let" [Decl] "in" Exp	;           --- let expression
+Let.         Exp5 ::= "let" "{" [Decl] "}" "in" Exp	;          --- let expression
 If.          Exp5 ::= "if" Exp "then" Exp "else" Exp ;  --- conditional
 Case.        Exp5 ::= "case" Exp "of" "{" [Alt] "}" ;   --- case expression
 FExp.        Exp5 ::= FExp ;
@@ -100,6 +102,7 @@ EOpE.        Exp2 ::= Exp3 CompOp Exp3 ;
 -- left-associative
 OAdd.        Exp3 ::= Exp3 "+" Exp4 ;
 OSub.        Exp3 ::= Exp3 "-" Exp4 ;
+ONeg.        Exp3 ::= "-" Exp4 ;
 
 OTimes.      Exp4 ::= Exp4 "*" Exp5 ;
 ODiv.        Exp4 ::= Exp4 "/" Exp5 ;
