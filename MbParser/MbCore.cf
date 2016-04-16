@@ -61,10 +61,10 @@ TupleTyCon.  GTyCon ::= "(" [Comma] ")" ;               --- tuple constructor
 
 ---- Expressions ----
 
-Lambda.      Exp5 ::= "\\" [APat] "->" Exp ;            --- lambda abstraction
-Let.         Exp5 ::= "let" "{" [Decl] "}" "in" Exp	;          --- let expression
-If.          Exp5 ::= "if" Exp "then" Exp "else" Exp ;  --- conditional
-Case.        Exp5 ::= "case" Exp "of" "{" [Alt] "}" ;   --- case expression
+Lambda.      Exp5 ::= "\\" [APat] "->" Exp "end" ;            --- lambda abstraction
+Let.         Exp5 ::= "let" "{" [Decl] "}" "in" Exp "end"	;   --- let expression
+If.          Exp5 ::= "if" Exp "then" Exp "else" Exp "end" ;  --- conditional
+Case.        Exp5 ::= "case" Exp "of" "{" [Alt] "}" ;         --- case expression
 FExp.        Exp5 ::= FExp ;
 
 FApp.        FExp	::= FExp AExp ;                       --- function application
