@@ -12,16 +12,19 @@ entrypoints Body ;
 
 Body.        Body ::= [TopDecl] ;
 
-DataDecl.    TopDecl ::= "data" TyConstr "=" [Constr] ;
+DataDecl.    TopDecl ::= DataDecl ;
 Decl.        TopDecl ::= Decl ;
 
 terminator TopDecl ";" ;
 separator Decl ";" ;
 separator nonempty Constr "|" ;
 
+Data.        DataDecl ::= "data" TyConstr "=" [Constr] ;
+
 Signature.   Decl ::= Var "::" Type ;                   --- signature declaration
 FunDecl.     Decl ::= Var [APat] "=" Exp ;              --- function declaration
-PatDecl.     Decl ::= Pat "=" Exp ;                     --- pattern declaration
+TmpVarDecl.  Decl ::= Var "=" Exp ;
+--PatDecl.     Decl ::= Pat "=" Exp ;                     --- pattern declaration
 
 
 
@@ -101,7 +104,7 @@ OAdd.        Exp3 ::= Exp3 "+" Exp4 ;
 OSub.        Exp3 ::= Exp3 "-" Exp4 ;
 ONeg.        Exp3 ::= "-" Exp4 ;
 
-OTimes.      Exp4 ::= Exp4 "*" Exp5 ;
+OMul.      Exp4 ::= Exp4 "*" Exp5 ;
 ODiv.        Exp4 ::= Exp4 "/" Exp5 ;
 
 -- comparison operators

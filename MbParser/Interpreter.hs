@@ -13,7 +13,7 @@ import ErrM
 runInterpreter :: String -> IO ()
 runInterpreter input = case result of
     Ok s -> putStrLn s
-    Bad s -> putStrLn s
+    Bad s -> putStrLn $ "                BAD!!!!!!!!!!!!!!!!!!!\n" ++ s
   where result = do {
     abstractSyntax <- pBody $ myLexer input;
     interpretBody $ abstractSyntax;
