@@ -27,7 +27,7 @@ PatDecl.     Decl ::= Pat "=" Exp ;                     --- pattern declaration
 
 ---- Types ----
 
-DataTyCon.   TyConstr	::=	TyCon [TyVar] ;
+DataTyCon.   TyConstr ::= TyCon [TyVar] ;
 DataCon.     Constr ::= Con [AType] ;
 
 separator TyVar "" ;
@@ -43,7 +43,7 @@ AppAType.    BType ::= BType AType ;                    --- type application
 GTyCon.      AType ::= GTyCon ;
 TyVar.       AType ::= TyVar ;
 TupleType.   AType ::= "(" Type "," [Type] ")" ;        --- tuple type
-ListType.    AType ::= "[" Type "]"	;                   --- list type
+ListType.    AType ::= "[" Type "]" ;                   --- list type
 ParenType.   AType ::= "(" Type ")" ;                   --- parenthesized constructor
 
 separator nonempty Type "," ;
@@ -59,15 +59,15 @@ TupleTyCon.  GTyCon ::= "(" [Comma] ")" ;               --- tuple constructor
 ---- Expressions ----
 
 Lambda.      Exp5 ::= "\\" [APat] "->" Exp "end" ;            --- lambda abstraction
-Let.         Exp5 ::= "let" "{" [Decl] "}" "in" Exp "end"	;   --- let expression
+Let.         Exp5 ::= "let" "{" [Decl] "}" "in" Exp "end" ;   --- let expression
 If.          Exp5 ::= "if" Exp "then" Exp "else" Exp "end" ;  --- conditional
 Case.        Exp5 ::= "case" Exp "of" "{" [Alt] "}" ;         --- case expression
 FExp.        Exp5 ::= FExp ;
 
-FApp.        FExp	::= FExp AExp ;                       --- function application
-AExp.        FExp	::= AExp ;
+FApp.        FExp ::= FExp AExp ;                       --- function application
+AExp.        FExp ::= AExp ;
 
-VarExp.      AExp ::= Var	;                             --- variable
+VarExp.      AExp ::= Var ;                             --- variable
 GConExp.     AExp ::= GCon ;                            --- general constructor
 LitExp.      AExp ::= Literal ;
 ParExp.      AExp ::= "(" Exp ")" ;                     --- parenthesized expression
@@ -126,7 +126,7 @@ ZeroGConPat. APat ::= GCon ;                            --- arity gcon = 0
 LitPat.      APat ::= Literal ;
 WildCard.    APat ::= "_" ;
 ParPat.      APat ::= "(" Pat ")" ;                     --- parenthesized pattern
-TuplePat.    APat ::= "(" Pat "," [Pat] ")"	;           --- tuple
+TuplePat.    APat ::= "(" Pat "," [Pat] ")" ;           --- tuple
 ListPat.     APat ::= "[" [Pat] "]" ;                   --- list
 
 separator nonempty Pat "," ;
