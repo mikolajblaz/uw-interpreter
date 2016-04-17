@@ -65,17 +65,14 @@ Lambda.      Exp5 ::= "\\" [APat] "->" Exp "end" ;            --- lambda abstrac
 Let.         Exp5 ::= "let" "{" [Decl] "}" "in" Exp "end" ;   --- let expression
 If.          Exp5 ::= "if" Exp "then" Exp "else" Exp "end" ;  --- conditional
 Case.        Exp5 ::= "case" Exp "of" "{" [Alt] "}" ;         --- case expression
-FExp.        Exp5 ::= FExp ;
 
-FApp.        FExp ::= FExp AExp ;                       --- function application
-AExp.        FExp ::= AExp ;
+FApp.        Exp6 ::= Exp6 Exp7 ;                       --- function application
 
-VarExp.      AExp ::= Var ;                             --- variable
-GConExp.     AExp ::= GCon ;                            --- general constructor
-LitExp.      AExp ::= Literal ;
-ParExp.      AExp ::= "(" Exp ")" ;                     --- parenthesized expression
-TupleExp.    AExp ::= "(" Exp "," [Exp] ")" ;           --- tuple
-ListExp.     AExp ::= "[" [Exp] "]" ;                   --- list
+VarExp.      Exp7 ::= Var ;                             --- variable
+GConExp.     Exp7 ::= GCon ;                            --- general constructor
+LitExp.      Exp7 ::= Literal ;
+TupleExp.    Exp7 ::= "(" Exp "," [Exp] ")" ;           --- tuple
+ListExp.     Exp7 ::= "[" [Exp] "]" ;                   --- list
 
 Alt.         Alt ::= Pat "->" Exp ;
 
@@ -88,6 +85,10 @@ _.           Exp1 ::= Exp2 ;
 _.           Exp2 ::= Exp3 ;
 _.           Exp3 ::= Exp4 ;
 _.           Exp4 ::= Exp5 ;
+_.           Exp5 ::= Exp6 ;
+_.           Exp6 ::= Exp7 ;
+_.           Exp7 ::= "(" Exp ")" ;
+
 
 
 
