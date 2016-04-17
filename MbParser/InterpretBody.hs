@@ -9,7 +9,8 @@ import AbsMbCore
 import ErrM
 
 -- TODO
-type DataEnv = Map Con DataDecl
+--type DataEnv = Map Con DataDecl
+type DataEnv = String
 
 
 failure :: Show a => a -> Err String
@@ -37,24 +38,31 @@ interpretDecls decls _ = interpretTmpVarDecls $ chooseVarDecls decls
     chooseVarDecls [] = []
 
 interpretTmpVarDecls :: [Decl] -> Err String
-interpretTmpVarDecls vds = Ok $ show vds
+interpretTmpVarDecls vds = do
+  finalState <- execStateT (processDecls vds) empty
+  return $ show finalState
 
 
 -- | A monad to work in
-type VarEnv = Map Var Int
+type VarEnv = Map Var Integer
 type M = StateT VarEnv Err
 
 
-evalExp :: Decl -> M Int
-evalExp e = execStateT (processExp e) empty
+processDecls :: [Decl] -> M ()
+processDecls [] = return ()
+processDecls ((TmpVarDecl var e):ds) = do
+  n <- processExp e
+  setStateValue var n
+  processDecls ds
 
-lookupVar (Var name) var_map = fromJust $ Data.Map.lookup name var_map
-setValue (Var var) val var_map = Data.Map.insert var val var_map
-setStateValue (Var var) val = modify (setValue (Var var) val)
+
+lookupVar name var_map = fromJust $ Data.Map.lookup name var_map
+setValue var val var_map = Data.Map.insert var val var_map
+setStateValue var val = modify (setValue var val)
 
 
-processExp :: Exp -> M Int
-processExp (Let (TmpVarDecl var (e1:_)) e2) = do {
+processExp :: Exp -> M Integer
+processExp (Let ((TmpVarDecl var e1):_) e2) = do {
 	n1 <- processExp e1;
   setStateValue var n1;
 	processExp e2;
@@ -68,7 +76,13 @@ processExp (If e1 e2 e3) = do {
 processExp (OAdd e1 e2) = binOp e1 e2 (+)
 processExp (OSub e1 e2) = binOp e1 e2 (-)
 processExp (OMul e1 e2) = binOp e1 e2 (*)
-processExp (ODiv e1 e2) = binOp e1 e2 (/)
+processExp (ODiv e1 e2) = do
+  n1 <- processExp e1
+  n2 <- processExp e2
+  if n2 /= 0
+    then return $ n1 `div` n2
+    else fail "Error: Division by 0"
+
 processExp (ONeg e1) = do
   n1 <- processExp e1
   return (-n1)
@@ -89,21 +103,16 @@ processExp (EOpE e1 compOp e2) = do {
 processExp (OAnd e1 e2) = binOp e1 e2 (*)
 processExp (OOr e1 e2) = binOp e1 e2 (\x y -> (x + y + 1) `div` 2)
 
-processExp (FExp (AExp aexp)) = processAExp aexp
+processExp (VarExp var) = gets $ lookupVar var
+processExp (LitExp (IntLit int)) = return int
 
-binOp :: Exp -> Exp -> (Int -> Int -> Int) -> M Int
+processExp (FApp e1 e2) = undefined
+processExp (GConExp gCon) = undefined
+processExp (TupleExp e1 es) = undefined
+processExp (ListExp es) = undefined
+
+binOp :: Exp -> Exp -> (Integer -> Integer -> Integer) -> M Integer
 binOp e1 e2 op = do
   n1 <- processExp e1
   n2 <- processExp e2
   return $ n1 `op` n2
-
-
-
-processAExp :: Exp -> M Int
-processAExp (VarExp var) = gets $ lookupVar var
-processAExp (LitExp (IntLit int)) = return int
-processAExp (ParExp e) = processExp e
-
-processAExp (GConExp gCon) = undefined
-processAExp (TupleExp e1 es) = undefined
-processAExp (ListExp es) = undefined

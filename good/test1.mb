@@ -4,18 +4,27 @@ a :: Int;
 b :: Int;
 z :: Int;
 d :: Int;
+e :: Int;
 
 a = 4;
 b = 3;
-z = if 3 < 5 then a * 3 + 2 - 4 / (5 - 0) else 10 end;
+-- z = 12 + 2 - 2 = 12
+z = if 3 < 5 then a * 3 + 2 - 10 / (5 - 0) else 10 end;
 
-main :: Int;
-main = 3 + let { x = 3 } in a + b + z + x end;
+-- e = 3 + 4 + 3 + 12 + 30 = 52
+e = 3 + let { x = 30 } in a + b + z + x end;
 
-d = if 3 <= 4
+-- d = local x = 4
+d = if 5 <= 4
   then 1 + (-4) / (-3)
   else if 3 == 4 || 9 /= 2
     then let {x = 4} in x end
     else 0 / 7
     end
   end;
+
+f :: Int;
+f = 8 / 0;
+
+main :: Int;
+main = a == 4 && b == 3 && (z == 12) && e == 52 && d == 4;
