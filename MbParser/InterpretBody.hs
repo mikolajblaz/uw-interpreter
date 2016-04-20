@@ -87,7 +87,9 @@ insertLocalToOuter localDecl binding =
 -- | A monad to work in
 type M = ReaderT Binding Err
 
-lookupVar name var_map = fromJust $ Map.lookup name var_map
+lookupVar name var_map = e
+  where ([TmpVarDecl var e], Just binding) = fromJust $ Map.lookup name var_map
+
 setValue var val var_map = Map.insert var val var_map
 setStateValue var val = modify (setValue var val)
 
