@@ -1,0 +1,147 @@
+---- MB Language Context-Free Grammar ----
+
+-- Author: Mikołaj Błaż
+
+-- Based on Haskell grammar available in "The Haskell 98 Report"
+-- (https://www.haskell.org/onlinereport/syntax-iso.html)
+
+
+---- Top constructs ----
+
+entrypoints Body ;
+
+Body.        Body ::= [Decl] ;
+
+separator Decl ";" ;
+
+VarDecl.  Decl ::= Var "=" Exp ;
+
+
+
+---- Types ----
+
+DataTyCon.   TyConstr ::= TyCon [TyVar] ;
+DataCon.     Constr ::= Con [Type2] ;
+
+separator TyVar "" ;
+separator Type2 "" ;
+
+
+FunType.     Type ::= Type1 "->" Type ;                 --- function type
+
+AppType.     Type1 ::= Type1 Type2 ;                    --- type application
+
+GTyCon.      Type2 ::= GTyCon ;
+TyVar.       Type2 ::= TyVar ;
+TupleType.   Type2 ::= "(" Type "," [Type] ")" ;        --- tuple type
+ListType.    Type2 ::= "[" Type "]" ;                   --- list type
+
+coercions Type 2;
+separator nonempty Type "," ;
+
+SimpleTyCon. GTyCon ::= TyCon ;
+UnitTyCon.   GTyCon ::= "()" ;                          --- unit constructor
+ListTyCon.   GTyCon ::= "[]" ;                          --- list constructor
+FunTyCon.    GTyCon ::= "(->)" ;                        --- function constructor
+TupleTyCon.  GTyCon ::= "(" [Comma] ")" ;               --- tuple constructor
+
+
+
+---- Expressions ----
+
+Lambda.      Exp5 ::= "\\" [Pat1] "->" Exp "end" ;            --- lambda abstraction
+Let.         Exp5 ::= "let" "{" [Decl] "}" "in" Exp "end" ;   --- let expression
+If.          Exp5 ::= "if" Exp "then" Exp "else" Exp "end" ;  --- conditional
+Case.        Exp5 ::= "case" Exp "of" "{" [Alt] "}" ;         --- case expression
+
+FApp.        Exp6 ::= Exp6 Exp7 ;                       --- function application
+
+VarExp.      Exp7 ::= Var ;                             --- variable
+GConExp.     Exp7 ::= GCon ;                            --- general constructor
+LitExp.      Exp7 ::= Literal ;
+TupleExp.    Exp7 ::= "(" Exp "," [Exp] ")" ;           --- tuple
+ListExp.     Exp7 ::= "[" [Exp] "]" ;                   --- list
+
+Alt.         Alt ::= Pat "->" Exp ;
+
+separator nonempty Exp "," ;
+separator Alt ";" ;
+
+_.           Exp  ::= Exp0 ;
+_.           Exp0 ::= Exp1 ;
+_.           Exp1 ::= Exp2 ;
+_.           Exp2 ::= Exp3 ;
+_.           Exp3 ::= Exp4 ;
+_.           Exp4 ::= Exp5 ;
+_.           Exp5 ::= Exp6 ;
+_.           Exp6 ::= Exp7 ;
+_.           Exp7 ::= "(" Exp ")" ;
+
+
+
+
+---- Operators ----
+-- right-associative
+OOr.         Exp0 ::= Exp1 "||" Exp0 ;
+OAnd.        Exp1 ::= Exp2 "&&" Exp1 ;
+
+-- non-associative
+EOpE.        Exp2 ::= Exp3 CompOp Exp3 ;
+
+-- left-associative
+OAdd.        Exp3 ::= Exp3 "+" Exp4 ;
+OSub.        Exp3 ::= Exp3 "-" Exp4 ;
+ONeg.        Exp3 ::= "-" Exp4 ;
+
+OMul.        Exp4 ::= Exp4 "*" Exp5 ;
+ODiv.        Exp4 ::= Exp4 "/" Exp5 ;
+
+-- comparison operators
+OEq.         CompOp ::= "==" ;
+ONeq.        CompOp ::= "/=" ;
+OLt.         CompOp ::= "<" ;
+OLte.        CompOp ::= "<=" ;
+OGt.         CompOp ::= ">" ;
+OGte.        CompOp ::= ">=" ;
+
+
+
+---- Patterns ----
+
+ManyGConPat. Pat ::= GCon [Pat1] ;                      --- arity gcon > 0
+
+VarPat.      Pat1 ::= Var ;
+ZeroGConPat. Pat1 ::= GCon ;                            --- arity gcon = 0
+LitPat.      Pat1 ::= Literal ;
+WildCard.    Pat1 ::= "_" ;
+TuplePat.    Pat1 ::= "(" Pat "," [Pat] ")" ;           --- tuple
+ListPat.     Pat1 ::= "[" [Pat] "]" ;                   --- list
+
+coercions Pat 1;
+separator nonempty Pat "," ;
+separator nonempty Pat1 "" ;
+
+SimpleCon.   GCon ::= Con ;
+UnitCon.     GCon ::= "()" ;
+ListCon.     GCon ::= "[]" ;
+TupleCon.    GCon ::= "(" [Comma] ")" ;
+
+Comma.       Comma ::= "," ;
+separator nonempty Comma "" ;
+
+
+
+---- Lexical syntax ----
+token Var (lower ( letter | digit )* ) ;
+token Con (upper ( letter | digit )* ) ;
+
+ConTyCon.    TyCon ::= Con ;
+VarTyVar.    TyVar ::= Var ;
+
+IntLit.      Literal ::= Integer ;
+DoubleLit.   Literal ::= Double ;
+CharLit.     Literal ::= Char ;
+StringLit.   Literal ::= String ;
+
+---- Comments ----
+comment "--" ;
