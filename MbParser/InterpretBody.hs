@@ -1,5 +1,6 @@
 module InterpretBody where
 
+import Control.Monad.Reader
 import qualified Data.List ( partition )
 import qualified Data.Map as Map
 
@@ -14,8 +15,8 @@ failure x = Bad $ "Undefined case: " ++ show x
 -- | Main interpreting function
 interpretBody :: Body -> Err String
 interpretBody (Body topdecls) = do
-    dataEnv <- buildDataEnv dataDecls
-    interpretDecls decls dataEnv
+    -- dataEnv <- buildDataEnv dataDecls
+    interpretTopDecls decls -- dataEnv
   where
     (dataDecls, decls) = Data.List.partition isDataDecl topdecls
     isDataDecl (DataDecl _) = True
@@ -24,37 +25,32 @@ interpretBody (Body topdecls) = do
 
 ----------------------- Types -----------------------
 
-buildDataEnv :: [TopDecl] -> Err DataEnv
-buildDataEnv [] = Ok "Empty DataEnv"
-buildDataEnv x = failure x
+-- buildDataEnv :: [TopDecl] -> Err DataEnv
+-- buildDataEnv [] = Ok "Empty DataEnv"
+-- buildDataEnv x = failure x
 
 ----------------------- Declarations -----------------------
 
-interpretDecls :: [TopDecl] -> DataEnv -> Err String
-interpretDecls decls _ = interpretTmpVarDecls $ chooseVarDecls decls
+interpretTopDecls :: [TopDecl] -> Err String
+interpretTopDecls decls = interpretTmpVarDecls $ chooseVarDecls decls
   where
-    chooseVarDecls ((Decl vd@(TmpVarDecl _ _)):ds) = (vd : chooseVarDecls ds)
-    chooseVarDecls (_:ds) = chooseVarDecls ds
+    chooseVarDecls ((Decl d):ds) = (d : chooseVarDecls ds)
     chooseVarDecls [] = []
 
 interpretTmpVarDecls :: [Decl] -> Err String
-interpretTmpVarDecls vds = do
-  finalState <- execStateT (evalDecls vds) Map.empty
-  return $ show finalState
+interpretTmpVarDecls decls = do
+  finalVal <- runReaderT (evalExp (Let decls (LitExp (IntLit 37)))) Map.empty
+  return $ show finalVal
 
 
-evalDecls :: [Decl] -> M ()
-evalDecls [] = return ()
-evalDecls ((TmpVarDecl var e):ds) = do
-  n <- evalExp e
-  setStateValue var n
-  evalDecls ds
+evalDecls :: [Decl] -> Env -> Env
+evalDecls = localToOuterEnv
 
 
 ----------------------- Expressions -----------------------
 
 evalExp :: Exp -> M Integer
-evalExp (Let decls e) = local (insertLocalToOuter decls) $ evalExp e
+evalExp (Let decls e) = local (evalDecls decls) $ evalExp e
 
 evalExp (If e1 e2 e3) = do {
 	n1 <- evalExp e1;
@@ -91,7 +87,12 @@ evalExp (EOpE e1 compOp e2) = do {
 evalExp (OAnd e1 e2) = binOp e1 e2 (*)
 evalExp (OOr e1 e2) = binOp e1 e2 (\x y -> (x + y + 1) `div` 2)
 
-evalExp (VarExp var) = asks $ lookupVar var
+-- TODO
+evalExp (VarExp var) = do {
+  e <- asks $ lookupVar var;
+  evalExp e
+}
+
 evalExp (LitExp (IntLit int)) = return int
 
 evalExp (FApp e1 e2) = undefined

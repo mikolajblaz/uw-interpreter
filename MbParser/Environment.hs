@@ -1,6 +1,5 @@
 module Environment where
 
-import Control.Monad.State
 import Control.Monad.Reader
 import qualified Data.Map as Map
 import Data.Maybe
@@ -15,7 +14,7 @@ type DataEnv = String
 type Env = Map.Map Var Exp
 
 -- | A monad to evaluate program in
-type M = ReaderT (VarEnv, Bindings) Err
+type M = ReaderT Env Err
 
 -- | Operations on environment
 lookupVar :: Var -> Env -> Exp
@@ -32,9 +31,9 @@ getVar (TmpVarDecl var _) = var
 
 -- | Extract expression from declaration
 getExp :: Decl -> Exp
-getVar (Signature var ty) = undefined
+getExp (Signature var ty) = undefined
 getExp (FunDecl _ _ _) = undefined
-getVar (TmpVarDecl _ exp) = var exp
+getExp (TmpVarDecl _ exp) = exp
 
 -- | Turn list of declarations to a map, where each varibale has its own
 -- expression as value
@@ -46,4 +45,4 @@ collectLocalDecl decls = foldr insertDecl Map.empty decls
 
 -- | Insert all declarations from local scope to bindings from outer scope.
 localToOuterEnv :: [Decl] -> Env -> Env
-localToOuterEnv localDecls env = Map.union (collectLocalDecl localDecl) env
+localToOuterEnv localDecls env = Map.union (collectLocalDecl localDecls) env
