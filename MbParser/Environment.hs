@@ -13,17 +13,17 @@ import ErrM
 type DataEnv = String
 
 -- | Bindings, i.e. map of variables in scope
-newtype Bindings = Bindings (Map.Map Var Bindings)
+newtype Bindings = Bindings (Map.Map Var VarEnv)
 -- | Variable declarations
 type VarEnv = Map.Map Var [Decl]
 
 -- | A monad to evaluate program in
-type M = ReaderT Binding Err
+type M = ReaderT (VarEnv, Bindings) Err
 
 
 
 lookupVar name var_map = e
-  where ([TmpVarDecl var e], Just binding) = fromJust $ Map.lookup name var_map
+  where ([TmpVarDecl var e], Just bindings) = fromJust $ Map.lookup name var_map
 
 setValue var val var_map = Map.insert var val var_map
 setStateValue var val = modify (setValue var val)
@@ -47,13 +47,13 @@ collectLocalDecl decls = foldr addDeclToList Map.empty decls
     appendDecl d Nothing = Just [d]
     appendDecl d (Just ds) = Just (d:ds)
 
--- | Insert declarations (of 1 variable) from local scope to binding
+-- | Insert declarations (of 1 variable) from local scope to bindings
 -- from outer scope.
 -- Simply replaces the old value.
-insertDeclToBinding :: Var -> [Decl] -> Binding -> Binding
+insertDeclToBinding :: Var -> [Decl] -> Bindings -> Bindings
 insertDeclToBinding var decls = Map.insert var (decls, Nothing)
 
--- | Insert all declarations from local scope to binding from outer scope.
-insertLocalToOuter :: [Decl] -> Binding -> Binding
-insertLocalToOuter localDecl binding =
-  Map.foldrWithKey insertDeclToBinding binding $ collectLocalDecl localDecl
+-- | Insert all declarations from local scope to bindings from outer scope.
+insertLocalToOuter :: [Decl] -> Bindings -> Bindings
+insertLocalToOuter localDecl bindings =
+  Map.foldrWithKey insertDeclToBinding bindings $ collectLocalDecl localDecl
