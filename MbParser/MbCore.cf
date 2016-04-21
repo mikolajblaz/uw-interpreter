@@ -22,7 +22,7 @@ separator nonempty Constr "|" ;
 Data.        DataDecl ::= "data" TyConstr "=" [Constr] ;
 
 Signature.   Decl ::= Var "::" Type ;                   --- signature declaration
-FunDecl.     Decl ::= Var [APat] "=" Exp ;              --- function declaration
+FunDecl.     Decl ::= Var [Pat1] "=" Exp ;              --- function declaration
 TmpVarDecl.  Decl ::= Var "=" Exp ;
 --PatDecl.     Decl ::= Pat "=" Exp ;                     --- pattern declaration
 
@@ -31,24 +31,22 @@ TmpVarDecl.  Decl ::= Var "=" Exp ;
 ---- Types ----
 
 DataTyCon.   TyConstr ::= TyCon [TyVar] ;
-DataCon.     Constr ::= Con [AType] ;
+DataCon.     Constr ::= Con [Type2] ;
 
 separator TyVar "" ;
-separator AType "" ;
+separator Type2 "" ;
 
 
-BType.       Type ::= BType ;
-FunBType.    Type ::= BType "->" Type ;                 --- function type
+FunType.     Type ::= Type1 "->" Type ;                 --- function type
 
-AType.       BType ::= AType ;
-AppAType.    BType ::= BType AType ;                    --- type application
+AppType.     Type1 ::= Type1 Type2 ;                    --- type application
 
-GTyCon.      AType ::= GTyCon ;
-TyVar.       AType ::= TyVar ;
-TupleType.   AType ::= "(" Type "," [Type] ")" ;        --- tuple type
-ListType.    AType ::= "[" Type "]" ;                   --- list type
-ParenType.   AType ::= "(" Type ")" ;                   --- parenthesized constructor
+GTyCon.      Type2 ::= GTyCon ;
+TyVar.       Type2 ::= TyVar ;
+TupleType.   Type2 ::= "(" Type "," [Type] ")" ;        --- tuple type
+ListType.    Type2 ::= "[" Type "]" ;                   --- list type
 
+coercions Type 2;
 separator nonempty Type "," ;
 
 SimpleTyCon. GTyCon ::= TyCon ;
@@ -61,7 +59,7 @@ TupleTyCon.  GTyCon ::= "(" [Comma] ")" ;               --- tuple constructor
 
 ---- Expressions ----
 
-Lambda.      Exp5 ::= "\\" [APat] "->" Exp "end" ;            --- lambda abstraction
+Lambda.      Exp5 ::= "\\" [Pat1] "->" Exp "end" ;            --- lambda abstraction
 Let.         Exp5 ::= "let" "{" [Decl] "}" "in" Exp "end" ;   --- let expression
 If.          Exp5 ::= "if" Exp "then" Exp "else" Exp "end" ;  --- conditional
 Case.        Exp5 ::= "case" Exp "of" "{" [Alt] "}" ;         --- case expression
@@ -105,7 +103,7 @@ OAdd.        Exp3 ::= Exp3 "+" Exp4 ;
 OSub.        Exp3 ::= Exp3 "-" Exp4 ;
 ONeg.        Exp3 ::= "-" Exp4 ;
 
-OMul.      Exp4 ::= Exp4 "*" Exp5 ;
+OMul.        Exp4 ::= Exp4 "*" Exp5 ;
 ODiv.        Exp4 ::= Exp4 "/" Exp5 ;
 
 -- comparison operators
@@ -120,20 +118,18 @@ OGte.        CompOp ::= ">=" ;
 
 ---- Patterns ----
 
-separator nonempty APat "" ;
+ManyGConPat. Pat ::= GCon [Pat1] ;                      --- arity gcon > 0
 
-APat.        Pat ::= APat ;
-ManyGConPat. Pat ::= GCon [APat] ;                      --- arity gcon > 0
+VarPat.      Pat1 ::= Var ;
+ZeroGConPat. Pat1 ::= GCon ;                            --- arity gcon = 0
+LitPat.      Pat1 ::= Literal ;
+WildCard.    Pat1 ::= "_" ;
+TuplePat.    Pat1 ::= "(" Pat "," [Pat] ")" ;           --- tuple
+ListPat.     Pat1 ::= "[" [Pat] "]" ;                   --- list
 
-VarPat.      APat ::= Var ;
-ZeroGConPat. APat ::= GCon ;                            --- arity gcon = 0
-LitPat.      APat ::= Literal ;
-WildCard.    APat ::= "_" ;
-ParPat.      APat ::= "(" Pat ")" ;                     --- parenthesized pattern
-TuplePat.    APat ::= "(" Pat "," [Pat] ")" ;           --- tuple
-ListPat.     APat ::= "[" [Pat] "]" ;                   --- list
-
+coercions Pat 1;
 separator nonempty Pat "," ;
+separator nonempty Pat1 "" ;
 
 SimpleCon.   GCon ::= Con ;
 UnitCon.     GCon ::= "()" ;
