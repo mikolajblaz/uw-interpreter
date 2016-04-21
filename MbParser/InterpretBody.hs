@@ -1,19 +1,12 @@
 module InterpretBody where
 
-import Control.Monad.State
-import Control.Monad.Reader
-
 import qualified Data.List ( partition )
 import qualified Data.Map as Map
-import Data.Maybe
 
 import AbsMbCore
 import ErrM
 
--- TODO
---type DataEnv = Map Con DataDecl
-type DataEnv = String
-
+import Environment
 
 failure :: Show a => a -> Err String
 failure x = Bad $ "Undefined case: " ++ show x
@@ -28,9 +21,14 @@ interpretBody (Body topdecls) = do
     isDataDecl (DataDecl _) = True
     isDataDecl _  = False
 
+
+----------------------- Types -----------------------
+
 buildDataEnv :: [TopDecl] -> Err DataEnv
 buildDataEnv [] = Ok "Empty DataEnv"
 buildDataEnv x = failure x
+
+----------------------- Declarations -----------------------
 
 interpretDecls :: [TopDecl] -> DataEnv -> Err String
 interpretDecls decls _ = interpretTmpVarDecls $ chooseVarDecls decls
@@ -52,47 +50,8 @@ evalDecls ((TmpVarDecl var e):ds) = do
   setStateValue var n
   evalDecls ds
 
-newtype Binding = Binding (Map.Map Var ([Decl], Maybe Binding))
 
--- | Extract variable from declaration
--- TODO: maybe extract many vars, if declaration is "Pattern = Exp"
-getVar :: Decl -> Var
-getVar (FunDecl var _ _) = var
-getVar (TmpVarDecl var _) = var
-getVar (Signature var ty) = undefined
-
--- | Turn list of declarations to a map, where each varibale has its own
--- declarations as value
-collectLocalDecl :: [Decl] -> Map.Map Var [Decl]
-collectLocalDecl decls = foldr addDeclToList Map.empty decls
-  where
-    addDeclToList :: Decl -> Map.Map Var [Decl] -> Map.Map Var [Decl]
-    addDeclToList d = Map.alter (appendDecl d) (getVar d)
-    appendDecl :: Decl -> Maybe [Decl] -> Maybe [Decl]
-    appendDecl d Nothing = Just [d]
-    appendDecl d (Just ds) = Just (d:ds)
-
--- | Insert declarations (of 1 variable) from local scope to binding
--- from outer scope.
--- Simply replaces the old value.
-insertDeclToBinding :: Var -> [Decl] -> Binding -> Binding
-insertDeclToBinding var decls = Map.insert var (decls, Nothing)
-
--- | Insert all declarations from local scope to binding from outer scope.
-insertLocalToOuter :: [Decl] -> Binding -> Binding
-insertLocalToOuter localDecl binding =
-  Map.foldrWithKey insertDeclToBinding binding $ collectLocalDecl localDecl
-
-
--- | A monad to work in
-type M = ReaderT Binding Err
-
-lookupVar name var_map = e
-  where ([TmpVarDecl var e], Just binding) = fromJust $ Map.lookup name var_map
-
-setValue var val var_map = Map.insert var val var_map
-setStateValue var val = modify (setValue var val)
-
+----------------------- Expressions -----------------------
 
 evalExp :: Exp -> M Integer
 evalExp (Let decls e) = local (insertLocalToOuter decls) $ evalExp e
