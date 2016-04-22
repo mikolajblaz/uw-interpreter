@@ -38,8 +38,8 @@ interpretTopDecls decls = interpretTmpVarDecls $ chooseVarDecls decls
     chooseVarDecls [] = []
 
 interpretTmpVarDecls :: [Decl] -> Err String
-interpretTmpVarDecls decls = do
-  finalVal <- runReaderT (evalExp (Let decls (LitExp (IntLit 37)))) Map.empty
+interpretTmpVarDecls decls = let rootExp = Let decls (VarExp (Var "main")) in do
+  finalVal <- runReaderT (evalExp rootExp) Map.empty
   return $ show finalVal
 
 
