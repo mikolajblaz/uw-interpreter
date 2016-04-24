@@ -39,17 +39,14 @@ interpretTopDecls decls = interpretTmpVarDecls $ chooseVarDecls decls
 
 interpretTmpVarDecls :: [Decl] -> Err String
 interpretTmpVarDecls decls = let rootExp = Let decls (VarExp (Var "main")) in do
-  finalVal <- runReaderT (evalExp rootExp) $ Env Map.empty
+  finalVal <- runReaderT (evalExp rootExp) $ Env Map.empty Map.empty
   return $ show finalVal
 
-
-evalDecls :: [Decl] -> Env -> Env
-evalDecls = localToOuterEnv
 
 
 ----------------------- Expressions -----------------------
 
-evalExp :: Exp -> M Integer
+evalExp :: Exp -> EvalM Integer
 evalExp (Let decls e) = local (evalDecls decls) $ evalExp e
 
 evalExp (If e1 e2 e3) = do {
@@ -87,11 +84,11 @@ evalExp (EOpE e1 compOp e2) = do {
 evalExp (OAnd e1 e2) = binOp e1 e2 (*)
 evalExp (OOr e1 e2) = binOp e1 e2 (\x y -> (x + y + 1) `div` 2)
 
--- TODO
 evalExp (VarExp var) = do {
-  (e, oEnv, lEnv) <- asks $ lookupVar var;
-  local (const oEnv) $ evalExp e
-  -- TODO: include lEnv
+  sExp <- asks $ lookupVar var;
+  case sExp of
+    Just (e, env) -> local (const env) $ evalExp e
+    Nothing -> fail $ "Undefined variable: " ++ show var
 }
 
 evalExp (LitExp (IntLit int)) = return int
@@ -101,7 +98,7 @@ evalExp (GConExp gCon) = undefined
 evalExp (TupleExp e1 es) = undefined
 evalExp (ListExp es) = undefined
 
-binOp :: Exp -> Exp -> (Integer -> Integer -> Integer) -> M Integer
+binOp :: Exp -> Exp -> (Integer -> Integer -> Integer) -> EvalM Integer
 binOp e1 e2 op = do
   n1 <- evalExp e1
   n2 <- evalExp e2

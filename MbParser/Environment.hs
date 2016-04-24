@@ -11,21 +11,29 @@ import ErrM
 --type DataEnv = Map Con DataDecl
 type DataEnv = String
 
-newtype Env = Env (Map.Map Var StaticExp)
-type StaticExp = (Exp, Env, LocalEnv)
-type LocalEnv = Map.Map Var Exp -- TODO: maybe (Exp, Env)
+-- | Whole environment
+data Env = Env OuterEnv LocalEnv
+-- | Local environment includes variables introduced by the last 'let'
+type LocalEnv = Map.Map Var Exp
+-- | Outer environment includes other variables
+type OuterEnv = Map.Map Var StaticExp
+-- | Expression which knows how to be executed (in which environment)
+type StaticExp = (Exp, Env)
+
 
 -- | A monad to evaluate program in
-type M = ReaderT Env Err
+type EvalM = ReaderT Env Err
 
 -- | Operations on environment
-lookupLocalVar :: Var -> LocalEnv -> Exp
-lookupLocalVar var localEnv = fromJust $ Map.lookup var localEnv
-lookupVar :: Var -> Env -> StaticExp
-lookupVar var (Env env) = fromJust $ Map.lookup var env
+lookupVar :: Var -> Env -> Maybe StaticExp
+lookupVar var env@(Env oEnv lEnv) = case Map.lookup var lEnv of
+  Just exp -> Just (exp, env)
+  Nothing -> case Map.lookup var oEnv of
+    Just sExp -> Just sExp
+    Nothing -> Nothing
 
-setVar :: Var -> Exp -> LocalEnv -> LocalEnv
-setVar var exp localEnv = Map.insert var exp localEnv
+setLocalVar :: Var -> Exp -> LocalEnv -> LocalEnv
+setLocalVar var exp localEnv = Map.insert var exp localEnv
 -- TODO: check if variable is already set
 
 -- | Extract variable from declaration
@@ -52,12 +60,18 @@ splitDecl = undefined
 -- TODO: implements patterns
 collectLocalDecl :: [Decl] -> LocalEnv
 collectLocalDecl decls = foldr insertDecl Map.empty decls
-  where insertDecl d = Map.insert (getVar d) (getExp d)
+  where insertDecl d = setLocalVar (getVar d) (getExp d)
 
 -- | Insert all declarations from local scope to bindings from outer scope.
-localToOuterEnv :: [Decl] -> Env -> Env
-localToOuterEnv localDecls outerEnv = Map.foldrWithKey (insertVar outerEnv localEnv) outerEnv localEnv
+localToOuterEnv :: LocalEnv -> OuterEnv -> OuterEnv
+localToOuterEnv localEnv outerEnv = Map.foldrWithKey (insertVar (Env outerEnv localEnv)) outerEnv localEnv
   where
+    insertVar :: Env -> Var -> Exp -> OuterEnv -> OuterEnv
+    insertVar env var exp outerEnv = Map.insert var (exp, env) outerEnv
+
+-- | Add declarations to exisitng environment
+evalDecls :: [Decl] -> Env -> Env
+evalDecls localDecls (Env oldOuterEnv oldLocalEnv) = Env outerEnv localEnv
+  where
+    outerEnv = localToOuterEnv oldLocalEnv oldOuterEnv
     localEnv = collectLocalDecl localDecls
-    insertVar :: Env -> LocalEnv -> Var -> Exp -> Env -> Env
-    insertVar outerEnv localEnv var exp (Env env) = Env $ Map.insert var (exp, outerEnv, localEnv) env
