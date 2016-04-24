@@ -8,6 +8,7 @@ import AbsMbCore
 import ErrM
 
 import Environment
+import Translations
 
 failure :: Show a => a -> Err String
 failure x = Bad $ "Undefined case: " ++ show x
