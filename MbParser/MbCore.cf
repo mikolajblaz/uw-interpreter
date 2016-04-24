@@ -59,52 +59,42 @@ TupleTyCon.  GTyCon ::= "(" [Comma] ")" ;               --- tuple constructor
 
 ---- Expressions ----
 
-Lambda.      Exp5 ::= "\\" [Pat1] "->" Exp "end" ;            --- lambda abstraction
-Let.         Exp5 ::= "let" "{" [Decl] "}" "in" Exp "end" ;   --- let expression
-If.          Exp5 ::= "if" Exp "then" Exp "else" Exp "end" ;  --- conditional
-Case.        Exp5 ::= "case" Exp "of" "{" [Alt] "}" ;         --- case expression
+Lambda.      Exp6 ::= "\\" [Pat1] "->" Exp "end" ;            --- lambda abstraction
+Let.         Exp6 ::= "let" "{" [Decl] "}" "in" Exp "end" ;   --- let expression
+If.          Exp6 ::= "if" Exp "then" Exp "else" Exp "end" ;  --- conditional
+Case.        Exp6 ::= "case" Exp "of" "{" [Alt] "}" ;         --- case expression
 
-FApp.        Exp6 ::= Exp6 Exp7 ;                       --- function application
+FApp.        Exp7 ::= Exp7 Exp8 ;                       --- function application
 
-VarExp.      Exp7 ::= Var ;                             --- variable
-GConExp.     Exp7 ::= GCon ;                            --- general constructor
-LitExp.      Exp7 ::= Literal ;
-TupleExp.    Exp7 ::= "(" Exp "," [Exp] ")" ;           --- tuple
-ListExp.     Exp7 ::= "[" [Exp] "]" ;                   --- list
+VarExp.      Exp8 ::= Var ;                             --- variable
+GConExp.     Exp8 ::= GCon ;                            --- general constructor
+LitExp.      Exp8 ::= Literal ;
+TupleExp.    Exp8 ::= "(" Exp "," [Exp] ")" ;           --- tuple
+ListExp.     Exp8 ::= "[" [Exp] "]" ;                   --- list
 
 Alt.         Alt ::= Pat "->" Exp ;
 
+coercions Exp 8;
 separator nonempty Exp "," ;
 separator Alt ";" ;
-
-_.           Exp  ::= Exp0 ;
-_.           Exp0 ::= Exp1 ;
-_.           Exp1 ::= Exp2 ;
-_.           Exp2 ::= Exp3 ;
-_.           Exp3 ::= Exp4 ;
-_.           Exp4 ::= Exp5 ;
-_.           Exp5 ::= Exp6 ;
-_.           Exp6 ::= Exp7 ;
-_.           Exp7 ::= "(" Exp ")" ;
-
 
 
 
 ---- Operators ----
 -- right-associative
-OOr.         Exp0 ::= Exp1 "||" Exp0 ;
-OAnd.        Exp1 ::= Exp2 "&&" Exp1 ;
+OOr.         Exp1 ::= Exp2 "||" Exp1 ;
+OAnd.        Exp2 ::= Exp3 "&&" Exp2 ;
 
 -- non-associative
-EOpE.        Exp2 ::= Exp3 CompOp Exp3 ;
+EOpE.        Exp3 ::= Exp4 CompOp Exp4 ;
 
 -- left-associative
-OAdd.        Exp3 ::= Exp3 "+" Exp4 ;
-OSub.        Exp3 ::= Exp3 "-" Exp4 ;
-ONeg.        Exp3 ::= "-" Exp4 ;
+OAdd.        Exp4 ::= Exp4 "+" Exp5 ;
+OSub.        Exp4 ::= Exp4 "-" Exp5 ;
+ONeg.        Exp4 ::= "-" Exp5 ;
 
-OMul.        Exp4 ::= Exp4 "*" Exp5 ;
-ODiv.        Exp4 ::= Exp4 "/" Exp5 ;
+OMul.        Exp5 ::= Exp5 "*" Exp6 ;
+ODiv.        Exp5 ::= Exp5 "/" Exp6 ;
 
 -- comparison operators
 OEq.         CompOp ::= "==" ;
