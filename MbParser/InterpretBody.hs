@@ -96,8 +96,14 @@ evalExp (VarExp var) = do {
     Bad err -> fail err
 }
 
+evalExp (Lambda pats exp) = undefined
+evalExp (Case exp alts) = undefined
+
+-------- TODO: not implemented yet
+
 evalExp (LitExp (IntLit int)) = return int
 
+evalExp (LitExp lit) = undefined
 evalExp (FApp e1 e2) = undefined
 evalExp (GConExp gCon) = undefined
 evalExp (TupleExp e1 es) = undefined
