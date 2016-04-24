@@ -1,6 +1,5 @@
 module InterpretBody where
 
-import Control.Monad.Reader
 import qualified Data.List ( partition )
 import qualified Data.Map as Map
 
@@ -8,6 +7,7 @@ import AbsMbCore
 import ErrM
 
 import Environment
+import Expressions
 import Translations
 
 failure :: Show a => a -> Err String
@@ -45,78 +45,3 @@ interpretTmpVarDecls decls = let
   in do
     finalVal <- runExp rootExp initEnv
     return $ show finalVal
-
-
-
------------------------ Expressions -----------------------
-runExp :: Exp -> Env -> Err Integer
-runExp exp env = runReaderT (evalExp exp) env
-
-evalExp :: Exp -> EvalM Integer
-evalExp (Let decls e) = do {
-  env <- ask;
-  case evalDecls decls env of
-    Ok newEnv -> local (const newEnv) $ evalExp e
-    Bad err -> fail err
-}
-
-evalExp (If e1 e2 e3) = do {
-  n1 <- evalExp e1;
-  evalExp $ if n1 == 1 then e2 else e3;
-}
-
-evalExp (OAdd e1 e2) = binOp e1 e2 (+)
-evalExp (OSub e1 e2) = binOp e1 e2 (-)
-evalExp (OMul e1 e2) = binOp e1 e2 (*)
-evalExp (ODiv e1 e2) = do
-  n1 <- evalExp e1
-  n2 <- evalExp e2
-  if n2 /= 0
-    then return $ n1 `div` n2
-    else fail "Error: Division by 0"
-
-evalExp (ONeg e1) = do
-  n1 <- evalExp e1
-  return (-n1)
-
-evalExp (EOpE e1 compOp e2) = do {
-  n1 <- evalExp e1;
-  n2 <- evalExp e2;
-  return $ if (n1 `evalOp` n2) then 1 else 0;
-} where evalOp = case compOp of {
-  OEq  -> (==);
-  ONeq -> (/=);
-  OLt  -> (<);
-  OLte -> (<=);
-  OGt  -> (>);
-  OGte -> (>=);
-}
-
-evalExp (OAnd e1 e2) = binOp e1 e2 (*)
-evalExp (OOr e1 e2) = binOp e1 e2 (\x y -> (x + y + 1) `div` 2)
-
-evalExp (VarExp var) = do {
-  sExp <- asks $ lookupVar var;
-  case sExp of
-    Ok (e, env) -> local (const env) $ evalExp e
-    Bad err -> fail err
-}
-
-evalExp (Lambda pats exp) = undefined
-evalExp (Case exp alts) = undefined
-
--------- TODO: not implemented yet
-
-evalExp (LitExp (IntLit int)) = return int
-
-evalExp (LitExp lit) = undefined
-evalExp (FApp e1 e2) = undefined
-evalExp (GConExp gCon) = undefined
-evalExp (TupleExp e1 es) = undefined
-evalExp (ListExp es) = undefined
-
-binOp :: Exp -> Exp -> (Integer -> Integer -> Integer) -> EvalM Integer
-binOp e1 e2 op = do
-  n1 <- evalExp e1
-  n2 <- evalExp e2
-  return $ n1 `op` n2
