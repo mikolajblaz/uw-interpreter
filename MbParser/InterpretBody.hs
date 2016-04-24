@@ -39,13 +39,18 @@ interpretTopDecls decls = interpretTmpVarDecls $ chooseVarDecls decls
     chooseVarDecls [] = []
 
 interpretTmpVarDecls :: [Decl] -> Err String
-interpretTmpVarDecls decls = let rootExp = Let decls (VarExp (Var "main")) in do
-  finalVal <- runReaderT (evalExp rootExp) $ Env Map.empty Map.empty
-  return $ show finalVal
+interpretTmpVarDecls decls = let
+    rootExp = Let decls (VarExp (Var "main"))
+    initEnv = Env Map.empty Map.empty
+  in do
+    finalVal <- runExp rootExp initEnv
+    return $ show finalVal
 
 
 
 ----------------------- Expressions -----------------------
+runExp :: Exp -> Env -> Err Integer
+runExp exp env = runReaderT (evalExp exp) env
 
 evalExp :: Exp -> EvalM Integer
 evalExp (Let decls e) = do {
