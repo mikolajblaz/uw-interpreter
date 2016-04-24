@@ -23,8 +23,23 @@ d = if 5 <= 4
     end
   end;
 
--- f :: Int;
-f = 8 / 0;
-
 -- main :: Int;
-main = a == 4 && b == 3 && (z == 12) && e == 52 && d == 4;
+main = a == 4 && b == 3 && (z == 12) && e == 52 && d == 4 && bind == b && rec == 6;
+
+-- bad :: Int;
+bad = 8 / 0;
+
+-- undef :: Int;
+undef = 3 + frt;
+
+-- bind :: Int;
+-- bind = 10 + 5 - (4 + 8) = 3
+bind = let { x = 10; y = 5 } in
+         x + y - let { a = 4 } in
+           a + let { x = 8 } in x end
+         end
+       end;
+
+-- rec :: Int
+-- rec = 6
+rec = let { r1 = r2; r2 = 6} in r1 end;
