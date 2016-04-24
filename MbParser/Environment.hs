@@ -1,5 +1,6 @@
 module Environment where
 
+import Control.Monad ( foldM )
 import Control.Monad.Reader
 import qualified Data.Map as Map
 import Data.Maybe
@@ -63,8 +64,8 @@ setLocalVar var exp localEnv = Ok $ Map.insert var exp localEnv
 -- TODO: we assume, that each variable has one expression bound
 -- TODO: implements patterns
 collectLocalDecl :: [Decl] -> Err LocalEnv
-collectLocalDecl decls = foldr insertDecl Map.empty decls
-  where insertDecl d = setLocalVar (getVar d) (getExp d)
+collectLocalDecl decls = foldM insertDecl Map.empty decls
+  where insertDecl lEnv d = setLocalVar (getVar d) (getExp d) lEnv
 
 -- | Insert local environment to outer environment.
 localToOuterEnv :: LocalEnv -> OuterEnv -> OuterEnv
@@ -77,7 +78,6 @@ localToOuterEnv localEnv outerEnv = Map.foldrWithKey (insertVar (Env outerEnv lo
 -- old outer environment and by creating a new local environment from
 -- declarations list
 evalDecls :: [Decl] -> Env -> Err Env
-evalDecls localDecls (Env oldOuterEnv oldLocalEnv) = Env outerEnv localEnv
-  where
-    outerEnv = localToOuterEnv oldLocalEnv oldOuterEnv
-    localEnv = collectLocalDecl localDecls
+evalDecls localDecls (Env oldOuterEnv oldLocalEnv) = do
+  localEnv <- collectLocalDecl localDecls
+  return $ Env (localToOuterEnv oldLocalEnv oldOuterEnv) localEnv

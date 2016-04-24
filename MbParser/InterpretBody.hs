@@ -47,7 +47,12 @@ interpretTmpVarDecls decls = let rootExp = Let decls (VarExp (Var "main")) in do
 ----------------------- Expressions -----------------------
 
 evalExp :: Exp -> EvalM Integer
-evalExp (Let decls e) = local (evalDecls decls) $ evalExp e
+evalExp (Let decls e) = do {
+  env <- ask;
+  case evalDecls decls env of
+    Ok newEnv -> local (const newEnv) $ evalExp e
+    Bad err -> fail err
+}
 
 evalExp (If e1 e2 e3) = do {
   n1 <- evalExp e1;
@@ -88,7 +93,7 @@ evalExp (VarExp var) = do {
   sExp <- asks $ lookupVar var;
   case sExp of
     Ok (e, env) -> local (const env) $ evalExp e
-    Bad err -> fail $ err
+    Bad err -> fail err
 }
 
 evalExp (LitExp (IntLit int)) = return int
