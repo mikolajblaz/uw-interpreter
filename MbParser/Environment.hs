@@ -19,10 +19,14 @@ type LocalEnv = Map.Map Var Exp -- TODO: maybe (Exp, Env)
 type M = ReaderT Env Err
 
 -- | Operations on environment
-lookupVar :: Var -> Env -> Exp
-lookupVar var env = fromJust $ Map.lookup var env
+lookupLocalVar :: Var -> LocalEnv -> Exp
+lookupLocalVar var localEnv = fromJust $ Map.lookup var localEnv
+lookupVar :: Var -> Env -> StaticExp
+lookupVar var (Env env) = fromJust $ Map.lookup var env
 
-setVar :: LocalEnv -> Var
+setVar :: Var -> Exp -> LocalEnv -> LocalEnv
+setVar var exp localEnv = Map.insert var exp localEnv
+-- TODO: check if variable is already set
 
 -- | Extract variable from declaration
 -- TODO: maybe extract many vars, if declaration is "Pattern = Exp"
@@ -37,6 +41,9 @@ getExp (Signature var ty) = undefined
 getExp (FunDecl _ _ _) = undefined
 getExp (TmpVarDecl _ exp) = exp
 
+splitDecl :: Decl -> (Var, Exp)
+splitDecl = undefined
+-- TODO: equivalent of above getExp and getVar
 
 
 -- | Turn list of declarations to a map, where each varibale has its own
@@ -49,5 +56,8 @@ collectLocalDecl decls = foldr insertDecl Map.empty decls
 
 -- | Insert all declarations from local scope to bindings from outer scope.
 localToOuterEnv :: [Decl] -> Env -> Env
-localToOuterEnv localDecls env = Map.foldr insertVar localEnv env
-  where localEnv = collectLocalDecl localDecls
+localToOuterEnv localDecls outerEnv = Map.foldrWithKey (insertVar outerEnv localEnv) outerEnv localEnv
+  where
+    localEnv = collectLocalDecl localDecls
+    insertVar :: Env -> LocalEnv -> Var -> Exp -> Env -> Env
+    insertVar outerEnv localEnv var exp (Env env) = Env $ Map.insert var (exp, outerEnv, localEnv) env

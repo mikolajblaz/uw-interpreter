@@ -39,7 +39,7 @@ interpretTopDecls decls = interpretTmpVarDecls $ chooseVarDecls decls
 
 interpretTmpVarDecls :: [Decl] -> Err String
 interpretTmpVarDecls decls = let rootExp = Let decls (VarExp (Var "main")) in do
-  finalVal <- runReaderT (evalExp rootExp) Map.empty
+  finalVal <- runReaderT (evalExp rootExp) $ Env Map.empty
   return $ show finalVal
 
 
@@ -53,7 +53,7 @@ evalExp :: Exp -> M Integer
 evalExp (Let decls e) = local (evalDecls decls) $ evalExp e
 
 evalExp (If e1 e2 e3) = do {
-	n1 <- evalExp e1;
+  n1 <- evalExp e1;
   evalExp $ if n1 == 1 then e2 else e3;
 }
 
@@ -72,15 +72,15 @@ evalExp (ONeg e1) = do
   return (-n1)
 
 evalExp (EOpE e1 compOp e2) = do {
-	n1 <- evalExp e1;
-	n2 <- evalExp e2;
-	return $ if (n1 `evalOp` n2) then 1 else 0;
+  n1 <- evalExp e1;
+  n2 <- evalExp e2;
+  return $ if (n1 `evalOp` n2) then 1 else 0;
 } where evalOp = case compOp of {
   OEq  -> (==);
   ONeq -> (/=);
-	OLt  -> (<);
-	OLte -> (<=);
-	OGt  -> (>);
+  OLt  -> (<);
+  OLte -> (<=);
+  OGt  -> (>);
   OGte -> (>=);
 }
 
@@ -89,8 +89,9 @@ evalExp (OOr e1 e2) = binOp e1 e2 (\x y -> (x + y + 1) `div` 2)
 
 -- TODO
 evalExp (VarExp var) = do {
-  e <- asks $ lookupVar var;
-  evalExp e
+  (e, oEnv, lEnv) <- asks $ lookupVar var;
+  local (const oEnv) $ evalExp e
+  -- TODO: include lEnv
 }
 
 evalExp (LitExp (IntLit int)) = return int
