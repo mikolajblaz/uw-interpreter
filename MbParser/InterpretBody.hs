@@ -87,8 +87,8 @@ evalExp (OOr e1 e2) = binOp e1 e2 (\x y -> (x + y + 1) `div` 2)
 evalExp (VarExp var) = do {
   sExp <- asks $ lookupVar var;
   case sExp of
-    Just (e, env) -> local (const env) $ evalExp e
-    Nothing -> fail $ "Undefined variable: " ++ show var
+    Ok (e, env) -> local (const env) $ evalExp e
+    Bad err -> fail $ err
 }
 
 evalExp (LitExp (IntLit int)) = return int
