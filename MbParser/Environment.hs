@@ -31,7 +31,7 @@ lookupVar var env@(Env oEnv lEnv) = case Map.lookup var lEnv of
   Just exp -> Ok (exp, env)
   Nothing -> case Map.lookup var oEnv of
     Just sExp -> Ok sExp
-    Nothing -> Bad $ "Undefined variable: " ++ show var
+    Nothing -> Bad $ "RuntimeError: Undefined variable " ++ show var
 
 -- | Extract variable from declaration
 -- TODO: maybe extract many vars, if declaration is "Pattern = Exp"
@@ -56,8 +56,9 @@ splitDecl = undefined
 -- | Set value of a variable in local environment.
 -- Each variable may be present only once in a local environment.
 setLocalVar :: Var -> Exp -> LocalEnv -> Err LocalEnv
-setLocalVar var exp localEnv = Ok $ Map.insert var exp localEnv
--- TODO: check if variable is already set
+setLocalVar var exp localEnv = if Map.member var localEnv
+  then Bad $ "RuntimeError: Variable " ++ show var ++ "defined twice"
+  else Ok $ Map.insert var exp localEnv
 
 -- | Turn list of declarations to a map, where each varibale has its own
 -- expression as value
