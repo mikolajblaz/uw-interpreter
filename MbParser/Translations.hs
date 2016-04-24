@@ -1,8 +1,8 @@
 module Translations where
 
-import MbAbsCore
+import AbsMbCore
 
 data VarLambda = VarLambda [Var] Exp
 
-simplifyLambda :: Exp -> VarLamda
+simplifyLambda :: Exp -> VarLambda
 simplifyLambda (Lambda [pats] exp) = undefined
