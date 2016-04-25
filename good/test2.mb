@@ -1,0 +1,14 @@
+-- Funkcje i pattern matching
+
+-- main :: Int;
+main = id a == 4 && sum 6 7 == 13;
+
+-- a :: Int;
+-- b :: Int;
+-- z :: Int;
+-- d :: Int;
+-- e :: Int;
+
+a = 4;
+id = \x -> x end;
+sum = \z y -> y + z end;
