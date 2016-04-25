@@ -57,7 +57,7 @@ splitDecl = undefined
 -- Each variable may be present only once in a local environment.
 setLocalVar :: Var -> Exp -> LocalEnv -> Err LocalEnv
 setLocalVar var exp localEnv = if Map.member var localEnv
-  then Bad $ "RuntimeError: Variable " ++ show var ++ "defined twice"
+  then Bad $ "RuntimeError: Variable " ++ show var ++ " defined twice"
   else Ok $ Map.insert var exp localEnv
 
 -- | Turn list of declarations to a map, where each varibale has its own

@@ -72,8 +72,8 @@ evalExp (FApp e1 e2) = do
 -- | Not evaluating if not needed
 evalExp lam@(Lambda _ _) = return lam
 evalExp lit@(LitExp _) = return lit
-evalExp tup@(TupleExp _ _) = tup
-evalExp lst@(ListExp _) = lst
+evalExp tup@(TupleExp _ _) = return tup
+evalExp lst@(ListExp _) = return lst
 
 evalExp (Case exp alts) = do
     (exp, env) <- asum $ map (tryMatch exp) alts
@@ -106,6 +106,7 @@ matchAgainst pat exp lEnv = do
       Ok newEnv -> return newEnv
       Bad err -> fail err
     (WildCard, e) -> return lEnv
-    (LitPat _, l) -> return lEnv -- TODO: assuming type check
+    (LitPat _, l) -> return lEnv -- TODO: assuming type check, TODO: check equality
     (ListPat ps, ListExp es) -> foldM (flip . uncurry $ matchAgainst) lEnv $ zip ps es
     (TuplePat p ps, TupleExp e es) -> foldM (flip . uncurry $ matchAgainst) lEnv $ zip (p:ps) (e:es)
+    _ -> mzero  -- TODO

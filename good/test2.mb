@@ -1,7 +1,7 @@
 -- Funkcje i pattern matching
 
 -- main :: Int;
-main = id a == 4 && sum 6 7 == 13;
+main = id a == 4 && const 60 7 == 7 && b == 6 && c == 21 && d == 38 && e == 7 && f == 8;
 
 -- a :: Int;
 -- b :: Int;
@@ -11,4 +11,33 @@ main = id a == 4 && sum 6 7 == 13;
 
 a = 4;
 id = \x -> x end;
-sum = \z y -> y + z end;
+const = \x y -> y end;
+
+b = case 4 of {
+  k -> k + 2;
+};
+
+c = case (3, 7) of {
+  (s, t) -> s * t;
+};
+
+d = case (38, 7) of {
+  r -> fst r;
+};
+
+fst = \x -> case x of {(x, y) -> x} end;
+snd = \x -> case x of {(x, y) -> y} end;
+
+e = case (45, 54) of {
+  [45, 54] -> 6;
+  (45, 54) -> 7
+};
+
+f = case (45, 54) of {
+  (x, x) -> 7; -- TODO: throw error, not pattern mismatch
+  (1, 1) -> 8
+};
+
+undef = case 7 of {
+  (4, 6) -> 5;
+};
