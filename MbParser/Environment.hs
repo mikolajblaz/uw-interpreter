@@ -75,10 +75,14 @@ localToOuterEnv localEnv outerEnv = Map.foldrWithKey (insertVar (Env outerEnv lo
     insertVar :: Env -> Var -> Exp -> OuterEnv -> OuterEnv
     insertVar env var exp outerEnv = Map.insert var (exp, env) outerEnv
 
--- | Evaluate list of declaration by merging old local environment with
--- old outer environment and by creating a new local environment from
--- declarations list
+-- | Add local environment to existing environment by merging
+-- old local environment with old outer environment and by setting
+-- the given local environment as a new one
+expandEnv :: LocalEnv -> Env -> Env
+expandEnv lEnv (Env oldOEnv oldLEnv) = Env (localToOuterEnv oldLEnv oldOEnv) lEnv
+
+-- | Turn list of declaration to local environment and expand environment
 evalDecls :: [Decl] -> Env -> Err Env
-evalDecls localDecls (Env oldOuterEnv oldLocalEnv) = do
+evalDecls localDecls env = do
   localEnv <- collectLocalDecl localDecls
-  return $ Env (localToOuterEnv oldLocalEnv oldOuterEnv) localEnv
+  return $ expandEnv localEnv env

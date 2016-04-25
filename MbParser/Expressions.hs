@@ -1,6 +1,7 @@
 module Expressions where
 
 import Control.Monad.Reader
+import Data.Foldable ( asum )
 import qualified Data.Map as Map
 
 import AbsMbCore
@@ -67,18 +68,44 @@ evalExp (FApp e1 e2) = do
   case n1 of
     Lambda (v:[]) exp -> evalExp (Let [TmpVarDecl v e2] exp)
     Lambda (v:vars) exp -> evalExp (Let [TmpVarDecl v e2] (Lambda vars exp))
+
+-- | Not evaluating if not needed
 evalExp lam@(Lambda _ _) = return lam
 evalExp lit@(LitExp _) = return lit
+evalExp tup@(TupleExp _ _) = tup
+evalExp lst@(ListExp _) = lst
+
+evalExp (Case exp alts) = do
+    (exp, env) <- asum $ map (tryMatch exp) alts
+    local (const env) $ evalExp exp
+  where
+    tryMatch :: Exp -> Alt -> EvalM StaticExp
+    tryMatch e1 (Alt pat e2) = do
+      env <- ask
+      lEnv <- matchAgainst pat e1 Map.empty
+      return (e2, expandEnv lEnv env)
 
 -------- TODO: not implemented yet
-evalExp (Case exp alts) = undefined
 
 evalExp (GConExp gCon) = undefined
-evalExp (TupleExp e1 es) = undefined
-evalExp (ListExp es) = undefined
 
 binOp :: Exp -> Exp -> (Integer -> Integer -> Integer) -> EvalM Exp
 binOp e1 e2 op = do
   LitExp (IntLit n1) <- evalExp e1
   LitExp (IntLit n2) <- evalExp e2
   return $ LitExp (IntLit (n1 `op` n2))
+
+
+
+------------- Pattern matching -------------------
+matchAgainst :: Pat -> Exp -> LocalEnv -> EvalM LocalEnv
+matchAgainst pat exp lEnv = do
+  evaledExp <- evalExp exp
+  case (pat, evaledExp) of
+    (VarPat var, e) -> case setLocalVar var e lEnv of
+      Ok newEnv -> return newEnv
+      Bad err -> fail err
+    (WildCard, e) -> return lEnv
+    (LitPat _, l) -> return lEnv -- TODO: assuming type check
+    (ListPat ps, ListExp es) -> foldM (flip . uncurry $ matchAgainst) lEnv $ zip ps es
+    (TuplePat p ps, TupleExp e es) -> foldM (flip . uncurry $ matchAgainst) lEnv $ zip (p:ps) (e:es)
