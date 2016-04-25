@@ -9,10 +9,10 @@ import ErrM
 import Environment
 
 
-runExp :: Exp -> Env -> Err Integer
+runExp :: Exp -> Env -> Err Exp
 runExp exp env = runReaderT (evalExp exp) env
 
-evalExp :: Exp -> EvalM Integer
+evalExp :: Exp -> EvalM Exp
 evalExp (Let decls e) = do {
   env <- ask;
   case evalDecls decls env of
@@ -22,27 +22,27 @@ evalExp (Let decls e) = do {
 
 evalExp (If e1 e2 e3) = do {
   n1 <- evalExp e1;
-  evalExp $ if n1 == 1 then e2 else e3;
+  evalExp $ if n1 == LitExp (IntLit 1) then e2 else e3;
 }
 
 evalExp (OAdd e1 e2) = binOp e1 e2 (+)
 evalExp (OSub e1 e2) = binOp e1 e2 (-)
 evalExp (OMul e1 e2) = binOp e1 e2 (*)
 evalExp (ODiv e1 e2) = do
-  n1 <- evalExp e1
-  n2 <- evalExp e2
+  LitExp (IntLit n1) <- evalExp e1
+  LitExp (IntLit n2) <- evalExp e2
   if n2 /= 0
-    then return $ n1 `div` n2
+    then return $ LitExp (IntLit (n1 `div` n2))
     else fail "Error: Division by 0"
 
 evalExp (ONeg e1) = do
-  n1 <- evalExp e1
-  return (-n1)
+  LitExp (IntLit n) <- evalExp e1
+  return $ LitExp (IntLit (-n))
 
 evalExp (EOpE e1 compOp e2) = do {
   n1 <- evalExp e1;
   n2 <- evalExp e2;
-  return $ if (n1 `evalOp` n2) then 1 else 0;
+  return $ if (n1 `evalOp` n2) then LitExp (IntLit 1) else LitExp (IntLit 0);
 } where evalOp = case compOp of {
   OEq  -> (==);
   ONeq -> (/=);
@@ -62,25 +62,23 @@ evalExp (VarExp var) = do {
     Bad err -> fail err
 }
 
-evalExp l@(Lambda _ _) = return l
 evalExp (FApp e1 e2) = do
   n1 <- evalExp e1
   case n1 of
     Lambda (v:[]) exp -> evalExp (Let [TmpVarDecl v e2] exp)
     Lambda (v:vars) exp -> evalExp (Let [TmpVarDecl v e2] (Lambda vars exp))
+evalExp lam@(Lambda _ _) = return lam
+evalExp lit@(LitExp _) = return lit
 
 -------- TODO: not implemented yet
 evalExp (Case exp alts) = undefined
 
-evalExp (LitExp (IntLit int)) = return int
-
-evalExp (LitExp lit) = undefined
 evalExp (GConExp gCon) = undefined
 evalExp (TupleExp e1 es) = undefined
 evalExp (ListExp es) = undefined
 
-binOp :: Exp -> Exp -> (Integer -> Integer -> Integer) -> EvalM Integer
+binOp :: Exp -> Exp -> (Integer -> Integer -> Integer) -> EvalM Exp
 binOp e1 e2 op = do
-  n1 <- evalExp e1
-  n2 <- evalExp e2
-  return $ n1 `op` n2
+  LitExp (IntLit n1) <- evalExp e1
+  LitExp (IntLit n2) <- evalExp e2
+  return $ LitExp (IntLit (n1 `op` n2))
