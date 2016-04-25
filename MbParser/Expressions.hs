@@ -62,15 +62,19 @@ evalExp (VarExp var) = do {
     Bad err -> fail err
 }
 
-evalExp (Lambda pats exp) = undefined
-evalExp (Case exp alts) = undefined
+evalExp l@(Lambda _ _) = return l
+evalExp (FApp e1 e2) = do
+  n1 <- evalExp e1
+  case n1 of
+    Lambda (v:[]) exp -> evalExp (Let [TmpVarDecl v e2] exp)
+    Lambda (v:vars) exp -> evalExp (Let [TmpVarDecl v e2] (Lambda vars exp))
 
 -------- TODO: not implemented yet
+evalExp (Case exp alts) = undefined
 
 evalExp (LitExp (IntLit int)) = return int
 
 evalExp (LitExp lit) = undefined
-evalExp (FApp e1 e2) = undefined
 evalExp (GConExp gCon) = undefined
 evalExp (TupleExp e1 es) = undefined
 evalExp (ListExp es) = undefined
