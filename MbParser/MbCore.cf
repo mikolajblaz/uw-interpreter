@@ -59,7 +59,7 @@ TupleTyCon.  GTyCon ::= "(" [Comma] ")" ;               --- tuple constructor
 
 ---- Expressions ----
 
-Lambda.      Exp6 ::= "\\" [Pat1] "->" Exp "end" ;            --- lambda abstraction
+Lambda.      Exp6 ::= "\\" [Var] "->" Exp "end" ;            --- lambda abstraction
 Let.         Exp6 ::= "let" "{" [Decl] "}" "in" Exp "end" ;   --- let expression
 If.          Exp6 ::= "if" Exp "then" Exp "else" Exp "end" ;  --- conditional
 Case.        Exp6 ::= "case" Exp "of" "{" [Alt] "}" ;         --- case expression
@@ -77,6 +77,7 @@ Alt.         Alt ::= Pat "->" Exp ;
 coercions Exp 8;
 separator nonempty Exp "," ;
 separator Alt ";" ;
+separator nonempty Var "" ;
 
 
 
