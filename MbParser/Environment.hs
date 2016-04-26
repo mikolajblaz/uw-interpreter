@@ -8,10 +8,6 @@ import Data.Maybe
 import AbsMbCore
 import ErrM
 
--- TODO
---type DataEnv = Map Con DataDecl
-type DataEnv = String
-
 -- | Whole environment
 data Env = Env OuterEnv LocalEnv
 -- | Local environment includes variables introduced by the last 'let'

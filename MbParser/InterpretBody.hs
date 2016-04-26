@@ -16,19 +16,13 @@ failure x = Bad $ "Undefined case: " ++ show x
 -- | Main interpreting function
 interpretBody :: Body -> Err String
 interpretBody (Body topdecls) = do
-    -- dataEnv <- buildDataEnv dataDecls
+    dataEnv <- buildDataEnv dataDecls
     interpretTopDecls decls -- dataEnv
   where
     (dataDecls, decls) = Data.List.partition isDataDecl topdecls
     isDataDecl (DataDecl _) = True
     isDataDecl _  = False
 
-
------------------------ Types -----------------------
-
--- buildDataEnv :: [TopDecl] -> Err DataEnv
--- buildDataEnv [] = Ok "Empty DataEnv"
--- buildDataEnv x = failure x
 
 ----------------------- Declarations -----------------------
 
