@@ -8,6 +8,9 @@ import AbsMbCore
 import ErrM
 
 import Environment
+type EEnv = Env Exp
+type StaticExp = StaticVal Exp
+
 
 evalExpVal :: Exp -> EvalM Exp
 evalExpVal e = liftM fst (evalExp e)

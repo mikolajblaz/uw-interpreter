@@ -8,14 +8,17 @@ import Data.Maybe
 import AbsMbCore
 import ErrM
 
+class EnvVal a where
+  getVal :: Decl -> a
+
 -- | Whole environment
-data Env = Env OuterEnv LocalEnv
+data Env val = Env OuterEnv LocalEnv
 -- | Local environment includes variables introduced by the last 'let'
-type LocalEnv = Map.Map Var Exp
+type LocalEnv val = Map.Map Var val
 -- | Outer environment includes other variables
-type OuterEnv = Map.Map Var StaticExp
+type OuterEnv val = Map.Map Var (StaticVal val)
 -- | Expression which knows how to be executed (in which environment)
-type StaticExp = (Exp, Env)
+type StaticVal val = (val, Env)
 
 
 -- | A monad to evaluate program in
