@@ -29,6 +29,10 @@ lookupVar var env@(Env oEnv lEnv) = case Map.lookup var lEnv of
     Just sExp -> Ok sExp
     Nothing -> Bad $ "RuntimeError: Undefined variable " ++ show var
 
+-- | Insert static expression directly to environment
+assignStaticExp :: Var -> StaticExp -> Env -> Env
+assignStaticExp v sExp (Env oEnv lEnv) = Env (Map.insert v sExp oEnv) lEnv
+
 -- | Extract variable from declaration
 -- TODO: maybe extract many vars, if declaration is "Pattern = Exp"
 getVar :: Decl -> Var
@@ -77,7 +81,7 @@ localToOuterEnv localEnv outerEnv = Map.foldrWithKey (insertVar (Env outerEnv lo
 expandEnv :: LocalEnv -> Env -> Env
 expandEnv lEnv (Env oldOEnv oldLEnv) = Env (localToOuterEnv oldLEnv oldOEnv) lEnv
 
--- | Turn list of declaration to local environment and expand environment
+-- | Turn list of declaration to local environment and expand given environment
 evalDecls :: [Decl] -> Env -> Err Env
 evalDecls localDecls env = do
   localEnv <- collectLocalDecl localDecls

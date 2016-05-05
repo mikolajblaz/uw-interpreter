@@ -168,17 +168,12 @@ partEvalExp (VarExp var) = do {
 partEvalExp (FApp e1 e2) = do
   env <- ask;
   (ev1, env1) <- partEvalExp e1
-  (ev2, env2) <- partEvalExp e2
+  let sExp2 = (e2, env)
   case ev1 of
-    Lambda (v:[]) exp -> do {
-      -- TODO
-      -- wstaw do środowiska env1 mapowanie 'v -> (ev2, env2)'
-      -- zwróć (exp, extEnv1)
-      partEvalExp (Let [TmpVarDecl v e2] exp)
-      --local (evalDecls ([TmpVarDecl v e2])) $ partEvalExp exp
-    }
-    Lambda (v:vars) exp -> let Ok eEnv = evalDecls ([TmpVarDecl v e2]) env in
-      return (Lambda vars exp, eEnv)
+    Lambda (v:[]) exp -> let eEnv1 = assignStaticExp v sExp2 env1 in
+      local (const eEnv1) $ partEvalExp exp
+    Lambda (v:vars) exp -> let eEnv1 = assignStaticExp v sExp2 env1 in
+      return (Lambda vars exp, eEnv1)
 
 -- | Not evaluating if not needed
 partEvalExp lam@(Lambda _ _) = do {env <- ask; return (lam, env)}
