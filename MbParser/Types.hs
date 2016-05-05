@@ -10,5 +10,9 @@ type DataEnv = Map.Map TyCon ([TyVar], Map.Map Con [Type])
 
 -- | Build data environment basing on 'data' declarations
 buildDataEnv :: [TopDecl] -> Err DataEnv
-buildDataEnv [] = Ok "Empty DataEnv"
-buildDataEnv x = Bad x
+buildDataEnv [] = Ok Map.empty
+buildDataEnv x = Bad $ show x
+
+----------------- Static type check ---------------------------
+checkTypes :: [TopDecl] -> Err String
+checkTypes _ = Ok "Types are OK"

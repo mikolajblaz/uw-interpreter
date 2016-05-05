@@ -9,6 +9,7 @@ import ErrM
 import Environment
 import Expressions
 import Translations
+import Types
 
 failure :: Show a => a -> Err String
 failure x = Bad $ "Undefined case: " ++ show x
@@ -17,6 +18,7 @@ failure x = Bad $ "Undefined case: " ++ show x
 interpretBody :: Body -> Err String
 interpretBody (Body topdecls) = do
     dataEnv <- buildDataEnv dataDecls
+    checkTypes decls -- dataEnv
     interpretTopDecls decls -- dataEnv
   where
     (dataDecls, decls) = Data.List.partition isDataDecl topdecls

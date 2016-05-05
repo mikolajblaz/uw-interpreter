@@ -13,7 +13,9 @@ import Environment
 runExp :: Exp -> Env -> Err Exp
 runExp exp env = runReaderT (evalExp exp) env
 
+-- | Evaluate expression in an environment hidden in 'Reader' monad
 evalExp :: Exp -> EvalM Exp
+-- | Extend environment by evaluating let declarations
 evalExp (Let decls e) = do {
   env <- ask;
   case evalDecls decls env of
@@ -56,6 +58,7 @@ evalExp (EOpE e1 compOp e2) = do {
 evalExp (OAnd e1 e2) = binOp e1 e2 (*)
 evalExp (OOr e1 e2) = binOp e1 e2 (\x y -> (x + y + 1) `div` 2)
 
+-- | Get 'static expression' from environment and evaluate it.
 evalExp (VarExp var) = do {
   sExp <- asks $ lookupVar var;
   case sExp of
@@ -63,6 +66,7 @@ evalExp (VarExp var) = do {
     Bad err -> fail err
 }
 
+-- | Full or partial application of lambda expression 'e1' to 'e2'
 evalExp (FApp e1 e2) = do
   n1 <- evalExp e1
   case n1 of
@@ -76,7 +80,9 @@ evalExp tup@(TupleExp _ _) = return tup
 evalExp lst@(ListExp _) = return lst
 
 evalExp (Case exp alts) = do
+    -- Try to match expression against patterns one by one.
     (exp, env) <- asum $ map (tryMatch exp) alts
+    -- Evaluate matched 'static expresion'
     local (const env) $ evalExp exp
   where
     tryMatch :: Exp -> Alt -> EvalM StaticExp
