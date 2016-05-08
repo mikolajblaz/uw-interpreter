@@ -10,20 +10,26 @@ import ErrM
 import Environment
 type EEnv = Env Exp
 type StaticExp = StaticVal Exp
+type ExpM = EvalM Exp
+
+instance EnvVal Exp where
+  getVal (Signature var ty) = undefined
+  getVal (FunDecl _ _ _) = undefined
+  getVal (TmpVarDecl _ exp) = exp
 
 
-evalExpVal :: Exp -> EvalM Exp
+evalExpVal :: Exp -> ExpM Exp
 evalExpVal e = liftM fst (evalExp e)
 
-emptyEnv :: EvalM Exp -> EvalM StaticExp
+emptyEnv :: ExpM Exp -> ExpM StaticExp
 emptyEnv me = liftM (\e -> (e, Env Map.empty Map.empty)) me
 
 
-runExp :: Exp -> Env -> Err Exp
+runExp :: Exp -> EEnv -> Err Exp
 runExp exp env = liftM fst $ runReaderT (evalExp exp) env
 
 -- | Evaluate expression in an environment hidden in 'Reader' monad
-evalExp :: Exp -> EvalM StaticExp
+evalExp :: Exp -> ExpM StaticExp
 -- | Extend environment by evaluating let declarations
 evalExp (Let decls e) = do {
   env <- ask;
@@ -81,9 +87,9 @@ evalExp (FApp e1 e2) = do
   (ev1, env1) <- evalExp e1
   let sExp2 = (e2, env)
   case ev1 of
-    Lambda (v:[]) exp -> let eEnv1 = assignStaticExp v sExp2 env1 in
+    Lambda (v:[]) exp -> let eEnv1 = assignStaticVal v sExp2 env1 in
       local (const eEnv1) $ evalExp exp
-    Lambda (v:vars) exp -> let eEnv1 = assignStaticExp v sExp2 env1 in
+    Lambda (v:vars) exp -> let eEnv1 = assignStaticVal v sExp2 env1 in
       return (Lambda vars exp, eEnv1)
 
 -- | Not evaluating if not needed
@@ -98,7 +104,7 @@ evalExp (Case exp alts) = do
     -- Evaluate matched 'static expresion'
     local (const env) $ evalExp exp
   where
-    tryMatch :: Exp -> Alt -> EvalM StaticExp
+    tryMatch :: Exp -> Alt -> ExpM StaticExp
     tryMatch e1 (Alt pat e2) = do
       env <- ask
       lEnv <- matchAgainst pat e1 Map.empty
@@ -108,7 +114,7 @@ evalExp (Case exp alts) = do
 
 evalExp (GConExp gCon) = undefined
 
-binOp :: Exp -> Exp -> (Integer -> Integer -> Integer) -> EvalM Exp
+binOp :: Exp -> Exp -> (Integer -> Integer -> Integer) -> ExpM Exp
 binOp e1 e2 op = do
   LitExp (IntLit n1) <- evalExpVal e1
   LitExp (IntLit n2) <- evalExpVal e2
@@ -117,7 +123,7 @@ binOp e1 e2 op = do
 
 
 ------------- Pattern matching -------------------
-matchAgainst :: Pat -> Exp -> LocalEnv -> EvalM LocalEnv
+matchAgainst :: Pat -> Exp -> LocalEnv Exp -> ExpM (LocalEnv Exp)
 matchAgainst pat exp lEnv = do
   (evaledExp, env) <- evalExp exp
   case (pat, evaledExp) of
