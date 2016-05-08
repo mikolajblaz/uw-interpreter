@@ -8,7 +8,6 @@ import AbsMbCore
 import ErrM
 
 import Environment
-type EEnv = Env Exp
 type StaticExp = StaticVal Exp
 type ExpM = EvalM Exp
 
@@ -25,7 +24,7 @@ emptyEnv :: ExpM Exp -> ExpM StaticExp
 emptyEnv me = liftM (\e -> (e, Env Map.empty Map.empty)) me
 
 
-runExp :: Exp -> EEnv -> Err Exp
+runExp :: Exp -> Env Exp -> Err Exp
 runExp exp env = liftM fst $ runReaderT (evalExp exp) env
 
 -- | Evaluate expression in an environment hidden in 'Reader' monad
