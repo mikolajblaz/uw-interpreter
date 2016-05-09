@@ -1,6 +1,6 @@
 -- Funkcje i pattern matching
 
-main :: Int;
+main :: Bool;
 main = id a == 4 && pid 60 7 == 7 && const 60 7 == 60 && b == 6 && c == 21 &&
        d == 38 && e == 7 && f == 8 && lst == 12 && eight 10 == 8;
 

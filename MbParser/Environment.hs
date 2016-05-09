@@ -35,7 +35,7 @@ lookupVar var env@(Env oEnv lEnv) = case Map.lookup var lEnv of
   Just exp -> return (exp, env)
   Nothing -> case Map.lookup var oEnv of
     Just sVal -> return sVal
-    Nothing -> fail $ "TypeCheckError: Undefined variable " ++ show var
+    Nothing -> fail $ "TypeCheckError: Undeclared variable " ++ show var
 
 -- | Insert static expression directly to environment
 assignStaticVal :: Var -> StaticVal val -> Env val -> Env val

@@ -48,7 +48,7 @@ compareTypes es ts = mapM_ (uncurry compareType) $ zip es ts
 equalityCheck :: Type -> Type -> TypeM Type
 equalityCheck tExpected tActual = if tExpected == tActual
     then return tActual
-    else fail $ "Expected " ++ show tExpected ++ ", got " ++ show tActual
+    else fail $ "TypeCheckError: Expected " ++ show tExpected ++ ", got " ++ show tActual
 
 checkType :: Exp -> TypeM Type
 checkType (If e1 e2 e3) = do
@@ -57,7 +57,7 @@ checkType (If e1 e2 e3) = do
   t3 <- checkType e3
   if (t2 == t3)
     then return t2
-    else fail "Both \"If\" branches should have the same type"
+    else fail "TypeCheckError: Both \"If\" branches should have the same type"
 
 checkType (OAdd e1 e2) = compareTypes [e1, e2] [intType, intType] >> return intType
 checkType (OSub e1 e2) = compareTypes [e1, e2] [intType, intType] >> return intType
@@ -93,12 +93,12 @@ checkType (Lambda ((Sign v t):signs) exp) = do
 
 checkType (Let decls e) = do {
   env <- ask;
-  newEnv <- case evalDecls decls env of {
+  nEnv <- case evalDecls decls env of {
     Ok newEnv -> return newEnv;
     Bad err -> fail err
   };
-  local (const newEnv) $ mapM checkDeclType decls;
-  local (const newEnv) $ checkType e
+  local (const nEnv) $ mapM_ checkDeclType decls;
+  local (const nEnv) $ checkType e
 }
 
 checkType (LitExp lit) = return $ GTyCon $ SimpleTyCon $ ConTyCon $ Con $ case lit of
