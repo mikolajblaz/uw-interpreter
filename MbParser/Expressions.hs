@@ -12,7 +12,7 @@ type StaticExp = StaticVal Exp
 type ExpM = EvalM Exp
 
 instance EnvVal Exp where
-  getVal (Signature var ty) = undefined
+  getVal (Signature (Sign var ty)) = undefined
   getVal (FunDecl _ _ _) = undefined
   getVal (TmpVarDecl _ exp) = exp
 
@@ -86,9 +86,9 @@ evalExp (FApp e1 e2) = do
   (ev1, env1) <- evalExp e1
   let sExp2 = (e2, env)
   case ev1 of
-    Lambda (v:[]) exp -> let eEnv1 = assignStaticVal v sExp2 env1 in
+    Lambda ((Sign v t):[]) exp -> let eEnv1 = assignStaticVal v sExp2 env1 in
       local (const eEnv1) $ evalExp exp
-    Lambda (v:vars) exp -> let eEnv1 = assignStaticVal v sExp2 env1 in
+    Lambda ((Sign v t):vars) exp -> let eEnv1 = assignStaticVal v sExp2 env1 in
       return (Lambda vars exp, eEnv1)
 
 -- | Not evaluating if not needed

@@ -39,7 +39,7 @@ assignStaticVal v sVal (Env oEnv lEnv) = Env (Map.insert v sVal oEnv) lEnv
 -- | Extract variable from declaration
 -- TODO: maybe extract many vars, if declaration is "Pattern = Exp"
 getVar :: Decl -> Var
-getVar (Signature var ty) = undefined
+getVar (Signature (Sign var ty)) = undefined
 getVar (FunDecl var _ _) = var
 getVar (TmpVarDecl var _) = var
 

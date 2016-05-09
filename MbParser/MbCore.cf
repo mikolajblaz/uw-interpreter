@@ -21,11 +21,13 @@ separator nonempty Constr "|" ;
 
 Data.        DataDecl ::= "data" TyConstr "=" [Constr] ;
 
-Signature.   Decl ::= Var "::" Type ;                   --- signature declaration
+Signature.   Decl ::= Signature ;                       --- signature declaration
 FunDecl.     Decl ::= Var [Pat1] "=" Exp ;              --- function declaration
 TmpVarDecl.  Decl ::= Var "=" Exp ;
 --PatDecl.     Decl ::= Pat "=" Exp ;                     --- pattern declaration
 
+Sign.        Signature ::= Var "::" Type ;
+separator nonempty Signature "," ;
 
 
 ---- Types ----
@@ -59,7 +61,7 @@ TupleTyCon.  GTyCon ::= "(" [Comma] ")" ;               --- tuple constructor
 
 ---- Expressions ----
 
-Lambda.      Exp6 ::= "\\" [Var] "->" Exp "end" ;            --- lambda abstraction
+Lambda.      Exp6 ::= "\\" [Signature] "." Exp "end" ;        --- lambda abstraction
 Let.         Exp6 ::= "let" "{" [Decl] "}" "in" Exp "end" ;   --- let expression
 If.          Exp6 ::= "if" Exp "then" Exp "else" Exp "end" ;  --- conditional
 Case.        Exp6 ::= "case" Exp "of" "{" [Alt] "}" ;         --- case expression

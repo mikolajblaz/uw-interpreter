@@ -11,9 +11,9 @@ main = id a == 4 && pid 60 7 == 7 && const 60 7 == 60 && b == 6 && c == 21 &&
 -- e :: Int;
 
 a = 4;
-id = \x -> x end;
-pid = \x y -> y end;
-const = \x y -> x end;
+id = \x :: Int. x end;
+pid = \x :: Int, y :: Int. y end;
+const = \x :: Int, y :: Int. x end;
 
 b = case 4 of {
   k -> k + 2;
@@ -27,8 +27,8 @@ d = case (38, 7) of {
   r -> fst r;
 };
 
-fst = \x -> case x of {(x, y) -> x} end;
-snd = \x -> case x of {(x, y) -> y} end;
+fst = \x :: Int. case x of {(x, y) -> x} end;
+snd = \x :: Int. case x of {(x, y) -> y} end;
 
 e = case (45, 54) of {
   [45, 54] -> 6;
