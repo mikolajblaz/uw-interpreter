@@ -29,9 +29,9 @@ charType = GTyCon $ SimpleTyCon $ ConTyCon $ Con "Char"
 stringType = GTyCon $ SimpleTyCon $ ConTyCon $ Con "String"
 
 instance EnvVal Type where
-  getVal (Signature (Sign var ty)) = ty
-  getVal (FunDecl _ _ _) = undefined
-  getVal (TmpVarDecl _ _) = undefined
+  getVal (Signature (Sign var ty)) = Just ty
+  getVal (FunDecl _ _ _) = Nothing
+  getVal (TmpVarDecl _ _) = Nothing
 
 -- | Check type correctness of a given expression and initial type environment
 staticTypeCheck :: Exp -> Env Type -> Err Type
@@ -51,7 +51,6 @@ equalityCheck tExpected tActual = if tExpected == tActual
     else fail $ "Expected " ++ show tExpected ++ ", got " ++ show tActual
 
 checkType :: Exp -> TypeM Type
--- checkType _ = return $ GTyCon UnitTyCon
 checkType (If e1 e2 e3) = do
   compareType e1 boolType
   t2 <- checkType e2
@@ -74,24 +73,31 @@ checkType (OOr e1 e2) = compareTypes [e1, e2] [boolType, boolType] >> return boo
 
 -- | Get 'static expression' from environment and evaluate it.
 checkType (VarExp var) = do
-  (t, st) <- asks $ lookupVar var
-  return t
+  sType <- asks $ lookupVar var
+  case sType of
+    Ok (t, env) -> return t
+    Bad err -> fail err
 
 -- | Full or partial application of lambda expression 'e1' to 'e2'
 checkType (FApp e1 e2) = do
   t1 <- checkType e1
   case t1 of
     FunType t2 t3 -> compareType e2 t2 >> return t3
-    _ -> fail "Only function can be applied to an argument."
+    _ -> fail "TypeCheckError: Only function can be applied to an argument."
+
+checkType (Lambda ((Sign v t):signs) exp) = do
+  env <- ask
+  let recExp = if signs == [] then exp else Lambda signs exp
+  recT <- local (assignStaticVal v (t, env)) $ checkType recExp
+  return $ FunType t recT
 
 -- TODO
--- checkType lam@(Lambda _ _) = emptyEnv $ return lam
--- checkType (Let decls e) = do {
---   env <- ask;
---   case evalDecls decls env of
---     Ok newEnv -> local (const newEnv) $ evalExp e
---     Bad err -> fail err
--- }
+checkType (Let decls e) = do {
+  env <- ask;
+  case evalDecls decls env of
+    Ok newEnv -> local (const newEnv) $ checkType e
+    Bad err -> fail err
+}
 
 checkType (LitExp lit) = return $ GTyCon $ SimpleTyCon $ ConTyCon $ Con $ case lit of
   IntLit _ -> "Int"
@@ -108,7 +114,7 @@ checkType (TupleExp e es) = do
 -- checkType (ListExp es) = mapM checkType es >>= return . ListType
 
 -- TODO
--- evalExp (Case exp alts) = do
+-- checkType (Case exp alts) = do
 --     -- Try to match expression against patterns one by one.
 --     (exp, env) <- asum $ map (tryMatch exp) alts
 --     -- Evaluate matched 'static expresion'
@@ -122,4 +128,5 @@ checkType (TupleExp e es) = do
 
 -------- TODO: not implemented yet
 
-evalExp (GConExp gCon) = undefined
+checkType (GConExp gCon) = fail $ "TypeCheckError: Undefined case: GCon"
+checkType x = fail $ "TypeCheckError: Undefined case: " ++ show x

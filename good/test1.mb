@@ -1,6 +1,6 @@
 -- Arytmetyka
 
--- main :: Int;
+main :: Int;
 main = a == 4 && b == 3 && (z == 12) && e == 52 && d == 4 && bind == b && rec == 6;
 
 -- a :: Int;

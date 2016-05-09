@@ -12,9 +12,9 @@ type StaticExp = StaticVal Exp
 type ExpM = EvalM Exp
 
 instance EnvVal Exp where
-  getVal (Signature (Sign var ty)) = undefined
+  getVal (Signature (Sign var ty)) = Nothing
   getVal (FunDecl _ _ _) = undefined
-  getVal (TmpVarDecl _ exp) = exp
+  getVal (TmpVarDecl _ exp) = Just exp
 
 
 evalExpVal :: Exp -> ExpM Exp
@@ -100,7 +100,7 @@ evalExp lst@(ListExp _) = emptyEnv $ return lst
 evalExp (Case exp alts) = do
     -- Try to match expression against patterns one by one.
     (exp, env) <- asum $ map (tryMatch exp) alts
-    -- Evaluate matched 'static expresion'
+    -- Evaluate matched 'static expression'
     local (const env) $ evalExp exp
   where
     tryMatch :: Exp -> Alt -> ExpM StaticExp

@@ -8,8 +8,13 @@ import Data.Maybe
 import AbsMbCore
 import ErrM
 
+-- | A value that can be kept in an environment
+-- Instances: Exp and Type
 class EnvVal val where
-  getVal :: Decl -> val
+  -- | Extract value from declaration
+  -- Nothing is not an error, it means that value cannot be extracted from
+  -- specific type of declarations
+  getVal :: Decl -> Maybe val
 
 -- | Whole environment
 data Env val = Env (OuterEnv val) (LocalEnv val)
@@ -27,10 +32,10 @@ type EvalM val = ReaderT (Env val) Err
 -- | Operations on environment
 lookupVar :: Var -> Env val -> Err (StaticVal val)
 lookupVar var env@(Env oEnv lEnv) = case Map.lookup var lEnv of
-  Just exp -> Ok (exp, env)
+  Just exp -> return (exp, env)
   Nothing -> case Map.lookup var oEnv of
-    Just sVal -> Ok sVal
-    Nothing -> Bad $ "RuntimeError: Undefined variable " ++ show var
+    Just sVal -> return sVal
+    Nothing -> fail $ "TypeCheckError: Undefined variable " ++ show var
 
 -- | Insert static expression directly to environment
 assignStaticVal :: Var -> StaticVal val -> Env val -> Env val
@@ -39,7 +44,7 @@ assignStaticVal v sVal (Env oEnv lEnv) = Env (Map.insert v sVal oEnv) lEnv
 -- | Extract variable from declaration
 -- TODO: maybe extract many vars, if declaration is "Pattern = Exp"
 getVar :: Decl -> Var
-getVar (Signature (Sign var ty)) = undefined
+getVar (Signature (Sign var ty)) = var
 getVar (FunDecl var _ _) = var
 getVar (TmpVarDecl var _) = var
 
@@ -54,7 +59,7 @@ splitDecl = undefined
 -- Each variable may be present only once in a local environment.
 setLocalVar :: Var -> val -> LocalEnv val -> Err (LocalEnv val)
 setLocalVar var exp localEnv = if Map.member var localEnv
-  then Bad $ "RuntimeError: Variable " ++ show var ++ " defined twice"
+  then Bad $ "TypeCheckError: Variable " ++ show var ++ " defined twice"
   else Ok $ Map.insert var exp localEnv
 
 -- | Turn list of declarations to a map, where each varibale has its own
@@ -63,8 +68,10 @@ setLocalVar var exp localEnv = if Map.member var localEnv
 -- TODO: implements patterns
 collectLocalDecl :: EnvVal val => [Decl] -> Err (LocalEnv val)
 collectLocalDecl decls = foldM insertDecl Map.empty decls
-  where insertDecl lEnv d = setLocalVar (getVar d) (getVal d) lEnv
-
+  where insertDecl lEnv d = case getVal d of {
+    Just val -> setLocalVar (getVar d) val lEnv;
+    Nothing -> Ok lEnv
+  }
 -- | Insert local environment to outer environment.
 localToOuterEnv :: LocalEnv val -> OuterEnv val -> OuterEnv val
 localToOuterEnv localEnv outerEnv = Map.foldrWithKey (insertVar (Env outerEnv localEnv)) outerEnv localEnv
