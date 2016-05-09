@@ -1,18 +1,23 @@
 -- Funkcje i pattern matching
 
--- main :: Int;
+main :: Int;
 main = id a == 4 && pid 60 7 == 7 && const 60 7 == 60 && b == 6 && c == 21 &&
        d == 38 && e == 7 && f == 8 && lst == 12 && eight 10 == 8;
 
--- a :: Int;
--- b :: Int;
--- z :: Int;
--- d :: Int;
--- e :: Int;
+a :: Int;
+b :: Int;
+c :: Int;
+d :: Int;
+e :: Int;
+f :: Int;
+z :: Int;
 
 a = 4;
+id :: Int -> Int;
 id = \x :: Int. x end;
+pid :: Int -> Int -> Int;
 pid = \x :: Int, y :: Int. y end;
+const :: Int -> Int -> Int;
 const = \x :: Int, y :: Int. x end;
 
 b = case 4 of {
@@ -27,7 +32,9 @@ d = case (38, 7) of {
   r -> fst r;
 };
 
+fst :: (Int, Int) -> Int;
 fst = \x :: Int. case x of {(x, y) -> x} end;
+snd :: (Int, Int) -> Int;
 snd = \x :: Int. case x of {(x, y) -> y} end;
 
 e = case (45, 54) of {
@@ -35,6 +42,7 @@ e = case (45, 54) of {
   (45, 54) -> 7
 };
 
+lst :: Int;
 lst = case [3, 4, 5] of {[x, y, z] -> x + y + z};
 
 f = case (45, 54) of {
@@ -46,4 +54,5 @@ undef = case 7 of {
   (4, 6) -> 5;
 };
 
+eight :: Int -> Int;
 eight = const 8;

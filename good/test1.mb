@@ -3,11 +3,11 @@
 main :: Int;
 main = a == 4 && b == 3 && (z == 12) && e == 52 && d == 4 && bind == b && rec == 6;
 
--- a :: Int;
--- b :: Int;
--- z :: Int;
--- d :: Int;
--- e :: Int;
+a :: Int;
+b :: Int;
+z :: Int;
+d :: Int;
+e :: Int;
 
 a = 4;
 b = 3;
@@ -26,7 +26,7 @@ d = if 5 <= 4
     end
   end;
 
--- bind :: Int;
+bind :: Int;
 -- bind = 10 + 5 - (4 + 8) = 3
 bind = let { x = 10; y = 5 } in
          x + y - let { a = 4 } in
@@ -36,15 +36,15 @@ bind = let { x = 10; y = 5 } in
 
 
 ------------------- BAD EXAMPLES -----------------
--- bad :: Int;
+bad :: Int;
 bad = 8 / 0;
 
--- undef :: Int;
+
 undef = 3 + frt;
 
--- rec :: Int
+rec :: Int;
 -- rec = 6
 rec = let { r1 = r2; r2 = 6} in r1 end;
 
--- twice :: Int;
+twice :: Int;
 twice = let { x = 3; x = 4} in x end;

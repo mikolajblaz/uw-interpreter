@@ -91,12 +91,14 @@ checkType (Lambda ((Sign v t):signs) exp) = do
   recT <- local (assignStaticVal v (t, env)) $ checkType recExp
   return $ FunType t recT
 
--- TODO
 checkType (Let decls e) = do {
   env <- ask;
-  case evalDecls decls env of
-    Ok newEnv -> local (const newEnv) $ checkType e
+  newEnv <- case evalDecls decls env of {
+    Ok newEnv -> return newEnv;
     Bad err -> fail err
+  };
+  local (const newEnv) $ mapM checkDeclType decls;
+  local (const newEnv) $ checkType e
 }
 
 checkType (LitExp lit) = return $ GTyCon $ SimpleTyCon $ ConTyCon $ Con $ case lit of
@@ -130,3 +132,16 @@ checkType (TupleExp e es) = do
 
 checkType (GConExp gCon) = fail $ "TypeCheckError: Undefined case: GCon"
 checkType x = fail $ "TypeCheckError: Undefined case: " ++ show x
+
+
+------------------- Declaration types ----------------------
+checkDeclType :: Decl -> TypeM ()
+checkDeclType (Signature _) = return ()
+checkDeclType (TmpVarDecl var exp) = do
+  t1 <- checkType $ VarExp var
+  t2 <- checkType exp
+  equalityCheck t1 t2
+  return ()
+
+-- TODO
+checkDeclType (FunDecl _ _ _) = fail $ "TypeCheckError: Undefined FunDecl"
