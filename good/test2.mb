@@ -2,7 +2,7 @@
 
 main :: Bool;
 main = id a == 4 && pid 60 7 == 7 && const 60 7 == 60 && b == 6 && c == 21 &&
-       d == 38 && e == 7 && f == 8 && lst == 12 && eight 10 == 8;
+       d == 38 && e == 6 && f == 7 && lst == 12 && eight 10 == 8;
 
 a :: Int;
 b :: Int;
@@ -33,12 +33,12 @@ d = case (38, 7) of {
 };
 
 fst :: (Int, Int) -> Int;
-fst = \x :: Int. case x of {(x, y) -> x} end;
+fst = \x :: (Int, Int). case x of {(x, y) -> x} end;
 snd :: (Int, Int) -> Int;
-snd = \x :: Int. case x of {(x, y) -> y} end;
+snd = \x :: (Int, Int). case x of {(x, y) -> y} end;
 
 e = case (45, 54) of {
-  [45, 54] -> 6;
+  (45, 55) -> 6;
   (45, 54) -> 7
 };
 
@@ -46,12 +46,13 @@ lst :: Int;
 lst = case [3, 4, 5] of {[x, y, z] -> x + y + z};
 
 f = case (45, 54) of {
-  (x, x) -> 7; -- TODO: throw error, not pattern mismatch
+  (x, y) -> 7;
   (1, 1) -> 8
 };
 
+undef :: Int;
 undef = case 7 of {
-  (4, 6) -> 5;
+  4 -> 5;
 };
 
 eight :: Int -> Int;
