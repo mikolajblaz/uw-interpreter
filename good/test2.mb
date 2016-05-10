@@ -2,7 +2,7 @@
 
 main :: Bool;
 main = id a == 4 && pid 60 7 == 7 && const 60 7 == 60 && b == 6 && c == 21 &&
-       d == 38 && e == 6 && f == 7 && lst == 12 && eight 10 == 8 && rec 7 == 2;
+       d == 38 && e == 6 && f == 7 && lst == 12 && eight 10 == 8 && rec 7 == 2 && r 3 == 2;
 
 a :: Int;
 b :: Int;
@@ -59,7 +59,7 @@ eight :: Int -> Int;
 eight = const 8;
 
 rec :: Int -> Int;
-rec = \x :: Int. if x == 2 then x else 2 end end;
+rec = \x :: Int. if x == 2 then x else eight 2 end end;
 
 r :: Int -> Int;
-r = \x :: Int. 4 end;
+r = \x :: Int. if x == 2 then x else eight 2 end end;
