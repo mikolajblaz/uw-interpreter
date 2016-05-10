@@ -146,16 +146,27 @@ checkType x = fail $ "TypeCheckError: Undefined case: " ++ show x
 -- | Check if pattern has the given type and return type of matched expression
 checkAltType :: Type -> Alt -> TypeM Type
 checkAltType t (Alt pat e) = do
-  env <- ask
-  (t, newEnv) <- case evalPat pat env of
-    Bad err -> fail err
-    Ok sType -> sType
+  checkPatType t pat
 
-  simpleCheck t pt
+  env <- ask
+  newEnv <- case evalPat pat env of
+    Bad err -> fail err
+    Ok newEnv -> return newEnv
   local (const newEnv) $ checkType e
 
+checkPatType :: Type -> Pat -> TypeM Type
+-- TODO
+checkPatType = undefined
+-- ManyGConPat GCon [Pat]
+-- | VarPat Var
+-- | ZeroGConPat GCon
+-- | LitPat Literal
+-- | WildCard
+-- | TuplePat Pat [Pat]
+-- | ListPat [Pat]
 
-evalPat :: Pat -> Env -> Err Type
+
+evalPat :: Pat -> Env Type -> Err (Env Type)
 evalPat pat env = undefined
 
 ------------------- Declaration types ----------------------
