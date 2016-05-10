@@ -4,7 +4,7 @@ main :: Int;
 main = if id a == 4 && pid 60 7 == 7 && const 60 7 == 60 && b == 6 && c == 21 &&
        d == 38 && e == 7 && f == 7 && lst == 12 && eight 10 == 8 && rec 7 == 0 &&
        r == 8 && silnia 4 == 24 && fst (3, 4/0) == 3 && fstt (1, (4, 5/0)) == 1 &&
-       const 4 5/0 == 4
+       const 4 (5/0) == 4
        then 1
        else 0 end;
 

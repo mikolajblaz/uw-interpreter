@@ -53,13 +53,6 @@ runExp exp env = liftM fst $ runReaderT (evalExp exp) env
 -- | Evaluate expression in an environment hidden in 'Reader' monad
 evalExp :: Exp -> ExpM StaticExp
 -- | Extend environment by evaluating let declarations
-evalExp (Let decls e) = do {
-  env <- ask;
-  case evalDecls decls env of
-    Ok newEnv -> local (const newEnv) $ evalExp e
-    Bad err -> fail err
-}
-
 evalExp (If e1 e2 e3) = do {
   n1 <- evalExpVal e1;
   evalExp $ if n1 == LitExp (IntLit 1) then e2 else e3;
@@ -103,16 +96,23 @@ evalExp (VarExp var) = do {
     Bad err -> fail err
 }
 
+evalExp (Let decls e) = do {
+env <- ask;
+case evalDecls decls env of
+  Ok newEnv -> local (const newEnv) $ evalExp e
+  Bad err -> fail err
+}
+
 -- | Full or partial application of lambda expression 'e1' to 'e2'
 evalExp (FApp e1 e2) = do
   env <- ask;
-  (ev1, env1) <- evalExp e1
-  let sExp2 = (e2, env)
-  case ev1 of
-    Lambda ((Sign v t):[]) exp -> let eEnv1 = assignStaticVal v sExp2 env1 in
-      local (const eEnv1) $ evalExp exp
-    Lambda ((Sign v t):vars) exp -> let eEnv1 = assignStaticVal v sExp2 env1 in
-      return (Lambda vars exp, eEnv1)
+  -- e1 must be a lambda
+  (Lambda ((Sign v t):vars) exp, env1) <- evalExp e1
+  -- bind expression e2 to variable v
+  let eEnv1 = assignStaticVal v (e2, env) env1
+  if vars == []
+    then local (const eEnv1) $ evalExp exp
+    else return (Lambda vars exp, eEnv1)
 
 -- | Not evaluating if not needed
 evalExp lam@(Lambda _ _) = addEnv $ return lam
