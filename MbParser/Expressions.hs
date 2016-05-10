@@ -151,16 +151,20 @@ binOp e1 e2 op = do
 ------------- Pattern matching -------------------
 type PatM = MaybeT ExpM
 
+-- | Try to match expression against pattern.
+-- If pattern is a varibale or wildcard, there is no need to evaluate expression
 matchAgainstExp :: Exp -> Pat -> Maybe (LocalEnv Exp) -> ExpM (Maybe (LocalEnv Exp))
 matchAgainstExp _ _ Nothing = return Nothing
-matchAgainstExp exp pat jLEnv@(Just lEnv) = do
-  (evaledExp, env) <- evalExp exp
-  case (pat, evaledExp) of
-    (VarPat var, e) -> case setLocalVar var e lEnv of
-      Ok newEnv -> return $ Just newEnv
-      Bad err -> return Nothing
-    (WildCard, e) -> return $ jLEnv
-    (LitPat lp, LitExp le) -> return $ if lp == le then jLEnv else Nothing
-    (ListPat ps, ListExp es) -> foldM (flip . uncurry $ matchAgainstExp) jLEnv $ zip es ps
-    (TuplePat p ps, TupleExp e es) -> foldM (flip . uncurry $ matchAgainstExp) jLEnv $ zip (e:es) (p:ps)
-    _ -> return Nothing  -- TODO
+matchAgainstExp exp pat jLEnv@(Just lEnv) = case pat of
+  VarPat var -> case setLocalVar var exp lEnv of
+    Ok newEnv -> return $ Just newEnv
+    Bad err -> return Nothing
+  WildCard -> return jLEnv
+  -- otherwise expression must be evaluated
+  _ -> do
+    (evaledExp, env) <- evalExp exp
+    case (pat, evaledExp) of
+      (LitPat lp, LitExp le) -> return $ if lp == le then jLEnv else Nothing
+      (ListPat ps, ListExp es) -> foldM (flip . uncurry $ matchAgainstExp) jLEnv $ zip es ps
+      (TuplePat p ps, TupleExp e es) -> foldM (flip . uncurry $ matchAgainstExp) jLEnv $ zip (e:es) (p:ps)
+      _ -> return Nothing  -- TODO

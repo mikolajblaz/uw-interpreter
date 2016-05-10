@@ -2,8 +2,9 @@
 
 main :: Int;
 main = if id a == 4 && pid 60 7 == 7 && const 60 7 == 60 && b == 6 && c == 21 &&
-       d == 38 && e == 6 && f == 7 && lst == 12 && eight 10 == 8 && rec 7 == 0 &&
-       r == 8 && silnia 4 == 24 && fst (3, 4) == 3
+       d == 38 && e == 7 && f == 7 && lst == 12 && eight 10 == 8 && rec 7 == 0 &&
+       r == 8 && silnia 4 == 24 && fst (3, 4/0) == 3 && fstt (1, (4, 5/0)) == 1 &&
+       const 4 5/0 == 4
        then 1
        else 0 end;
 
@@ -39,6 +40,9 @@ fst :: (Int, Int) -> Int;
 fst = \x :: (Int, Int). case x of {(x, y) -> x} end;
 snd :: (Int, Int) -> Int;
 snd = \x :: (Int, Int). case x of {(x, y) -> y} end;
+
+fstt :: (Int, (Int, Int)) -> Int;
+fstt = \x :: (Int, (Int, Int)). case x of {(x, y) -> x} end;
 
 e = case (45, 54) of {
   (45, 55) -> 6;
