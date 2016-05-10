@@ -100,7 +100,10 @@ checkType (Let decls e) = do {
     Ok newEnv -> return newEnv;
     Bad err -> fail err
   };
-  local (const nEnv) $ mapM_ checkDeclType decls;
+  let Env oEnv lEnv = nEnv in
+  --fail $ show lEnv;
+  -- check if type of declaration matches signature (stored in nEnv)
+  --mapM_ ((local (const nEnv)) . checkDeclType) decls;
   local (const nEnv) $ checkType e
 }
 
@@ -146,7 +149,7 @@ checkAltType t (Alt pat e) = do
 -- | Match type against pattern and change local environment
 matchAgainstType :: Type -> Pat -> LocalEnv Type -> Err (LocalEnv Type)
 matchAgainstType t pat lEnv = do
-  let failMsg = "TypeCheckError: type of " ++ show pat ++ "doesn't match expected type " ++ show t
+  let failMsg = "TypeCheckError: type of " ++ show pat ++ " doesn't match expected type " ++ show t
   case (pat, t) of
     (WildCard, _) -> return lEnv
     (VarPat var, t) -> case setLocalVar var t lEnv of
