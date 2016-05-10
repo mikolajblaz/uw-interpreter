@@ -12,14 +12,14 @@ import Environment
 type StaticExp = StaticVal Exp
 type ExpM = EvalM Exp
 
-instance Applicative Err where
-  pure = Ok
-  (Bad s) <*> _ = Bad s
-  (Ok f) <*> o  = liftM f o
-
-instance Alternative Err where
-  empty = Bad "RunTimeError: Non-exhaustive patterns in case"
-  (<|>) = mplus
+-- instance Applicative Err where
+--   pure = Ok
+--   (Bad s) <*> _ = Bad s
+--   (Ok f) <*> o  = liftM f o
+--
+-- instance Alternative Err where
+--   empty = Bad "RunTimeError: Non-exhaustive patterns in case"
+--   (<|>) = mplus
 
 
 trueExp, falseExp :: Exp
@@ -35,8 +35,14 @@ instance EnvVal Exp where
 evalExpVal :: Exp -> ExpM Exp
 evalExpVal e = liftM fst (evalExp e)
 
-emptyEnv :: ExpM Exp -> ExpM StaticExp
-emptyEnv me = liftM (\e -> (e, Env Map.empty Map.empty)) me
+addEmptyEnv :: ExpM Exp -> ExpM StaticExp
+addEmptyEnv me = liftM (\e -> (e, Env Map.empty Map.empty)) me
+
+addEnv :: ExpM Exp -> ExpM StaticExp
+addEnv me = do
+  env <- ask
+  e <- me
+  return (e, env)
 
 
 runExp :: Exp -> Env Exp -> Err Exp
@@ -57,21 +63,21 @@ evalExp (If e1 e2 e3) = do {
   evalExp $ if n1 == LitExp (IntLit 1) then e2 else e3;
 }
 
-evalExp (OAdd e1 e2) = emptyEnv $ binOp e1 e2 (+)
-evalExp (OSub e1 e2) = emptyEnv $ binOp e1 e2 (-)
-evalExp (OMul e1 e2) = emptyEnv $ binOp e1 e2 (*)
-evalExp (ODiv e1 e2) = emptyEnv $ do
+evalExp (OAdd e1 e2) = addEmptyEnv $ binOp e1 e2 (+)
+evalExp (OSub e1 e2) = addEmptyEnv $ binOp e1 e2 (-)
+evalExp (OMul e1 e2) = addEmptyEnv $ binOp e1 e2 (*)
+evalExp (ODiv e1 e2) = addEmptyEnv $ do
   LitExp (IntLit n1) <- evalExpVal e1
   LitExp (IntLit n2) <- evalExpVal e2
   if n2 /= 0
     then return $ LitExp (IntLit (n1 `div` n2))
     else fail "Error: Division by 0"
 
-evalExp (ONeg e1) = emptyEnv $ do
+evalExp (ONeg e1) = addEmptyEnv $ do
   LitExp (IntLit n) <- evalExpVal e1
   return $ LitExp (IntLit (-n))
 
-evalExp (EOpE e1 compOp e2) = emptyEnv $ do {
+evalExp (EOpE e1 compOp e2) = addEmptyEnv $ do {
   n1 <- evalExpVal e1;
   n2 <- evalExpVal e2;
   return $ if (n1 `evalOp` n2) then LitExp (IntLit 1) else LitExp (IntLit 0);
@@ -84,8 +90,8 @@ evalExp (EOpE e1 compOp e2) = emptyEnv $ do {
   OGte -> (>=);
 }
 
-evalExp (OAnd e1 e2) = emptyEnv $ binOp e1 e2 (*)
-evalExp (OOr e1 e2) = emptyEnv $ binOp e1 e2 (\x y -> (x + y + 1) `div` 2)
+evalExp (OAnd e1 e2) = addEmptyEnv $ binOp e1 e2 (*)
+evalExp (OOr e1 e2) = addEmptyEnv $ binOp e1 e2 (\x y -> (x + y + 1) `div` 2)
 
 -- | Get 'static expression' from environment and evaluate it.
 evalExp (VarExp var) = do {
@@ -107,10 +113,10 @@ evalExp (FApp e1 e2) = do
       return (Lambda vars exp, eEnv1)
 
 -- | Not evaluating if not needed
-evalExp lam@(Lambda _ _) = emptyEnv $ return lam
-evalExp lit@(LitExp _) = emptyEnv $ return lit
-evalExp tup@(TupleExp _ _) = emptyEnv $ return tup
-evalExp lst@(ListExp _) = emptyEnv $ return lst
+evalExp lam@(Lambda _ _) = addEnv $ return lam
+evalExp lit@(LitExp _) = addEmptyEnv $ return lit
+evalExp tup@(TupleExp _ _) = addEnv $ return tup
+evalExp lst@(ListExp _) = addEnv $ return lst
 
 evalExp (Case exp alts) = do
     -- Try to match expression against patterns one by one.
