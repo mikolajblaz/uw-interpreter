@@ -121,7 +121,7 @@ evalExp (Case exp alts) = do
     tryMatch :: Exp -> Alt -> ExpM StaticExp
     tryMatch e1 (Alt pat e2) = do
       env <- ask
-      lEnv <- matchAgainst e1 pat Map.empty
+      lEnv <- matchAgainstExp e1 pat Map.empty
       return (e2, expandEnv lEnv env)
 
 -------- TODO: not implemented yet
@@ -137,8 +137,8 @@ binOp e1 e2 op = do
 
 
 ------------- Pattern matching -------------------
-matchAgainst :: Exp -> Pat -> LocalEnv Exp -> ExpM (LocalEnv Exp)
-matchAgainst exp pat lEnv = do
+matchAgainstExp :: Exp -> Pat -> LocalEnv Exp -> ExpM (LocalEnv Exp)
+matchAgainstExp exp pat lEnv = do
   (evaledExp, env) <- evalExp exp
   case (pat, evaledExp) of
     (VarPat var, e) -> case setLocalVar var e lEnv of
@@ -146,6 +146,6 @@ matchAgainst exp pat lEnv = do
       Bad err -> fail err
     (WildCard, e) -> return lEnv
     (LitPat _, l) -> return lEnv -- TODO: assuming type check, TODO: check equality
-    (ListPat ps, ListExp es) -> foldM (flip . uncurry $ matchAgainst) lEnv $ zip es ps
-    (TuplePat p ps, TupleExp e es) -> foldM (flip . uncurry $ matchAgainst) lEnv $ zip (e:es) (p:ps)
+    (ListPat ps, ListExp es) -> foldM (flip . uncurry $ matchAgainstExp) lEnv $ zip es ps
+    (TuplePat p ps, TupleExp e es) -> foldM (flip . uncurry $ matchAgainstExp) lEnv $ zip (e:es) (p:ps)
     _ -> mzero  -- TODO

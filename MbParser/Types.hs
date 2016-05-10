@@ -26,7 +26,7 @@ boolType = GTyCon $ SimpleTyCon $ ConTyCon $ Con "Bool"
 intType = GTyCon $ SimpleTyCon $ ConTyCon $ Con "Int"
 doubleType = GTyCon $ SimpleTyCon $ ConTyCon $ Con "Double"
 charType = GTyCon $ SimpleTyCon $ ConTyCon $ Con "Char"
-stringType = GTyCon $ SimpleTyCon $ ConTyCon $ Con "String"
+stringType = GTyCon $ SimpleTyCon $ ConTyCon $ Con "String" -- TODO: maybe list of chars
 
 instance EnvVal Type where
   getVal (Signature (Sign var ty)) = Just ty
@@ -125,17 +125,6 @@ checkType (Case e alts) = do
   mapM_ (simpleCheck t) ts
   return t
 
---     -- Try to match expression against patterns one by one.
---     (exp, env) <- asum $ map (tryMatch exp) alts
---     -- Evaluate matched 'static expresion'
---     local (const env) $ evalExp exp
---   where
---     tryMatch :: Exp -> Alt -> ExpM StaticExp
---     tryMatch e1 (Alt pat e2) = do
---       env <- ask
---       lEnv <- matchAgainst pat e1 Map.empty
---       return (e2, expandEnv lEnv env)
-
 -------- TODO: not implemented yet
 
 checkType (GConExp gCon) = fail $ "TypeCheckError: Undefined case: GCon"
@@ -146,28 +135,34 @@ checkType x = fail $ "TypeCheckError: Undefined case: " ++ show x
 -- | Check if pattern has the given type and return type of matched expression
 checkAltType :: Type -> Alt -> TypeM Type
 checkAltType t (Alt pat e) = do
-  checkPatType t pat
-
   env <- ask
-  newEnv <- case evalPat pat env of
+  -- check type of pattern and expand type environment
+  newEnv <- case matchAgainstType t pat Map.empty of
+    Ok lEnv -> return $ expandEnv lEnv env
     Bad err -> fail err
-    Ok newEnv -> return newEnv
+  -- check type of expression in a new environment
   local (const newEnv) $ checkType e
 
-checkPatType :: Type -> Pat -> TypeM Type
--- TODO
-checkPatType = undefined
--- ManyGConPat GCon [Pat]
--- | VarPat Var
--- | ZeroGConPat GCon
--- | LitPat Literal
--- | WildCard
--- | TuplePat Pat [Pat]
--- | ListPat [Pat]
-
-
-evalPat :: Pat -> Env Type -> Err (Env Type)
-evalPat pat env = undefined
+-- | Match type against pattern and change local environment
+matchAgainstType :: Type -> Pat -> LocalEnv Type -> Err (LocalEnv Type)
+matchAgainstType t pat lEnv = do
+  let failMsg = "TypeCheckError: type of " ++ show pat ++ "doesn't match expected type " ++ show t
+  case (pat, t) of
+    (WildCard, _) -> return lEnv
+    (VarPat var, t) -> case setLocalVar var t lEnv of
+      Ok newEnv -> return newEnv
+      Bad err -> fail err
+    (LitPat lit, GTyCon (SimpleTyCon (ConTyCon (Con con)))) -> case (lit, con) of
+      (IntLit _, "Int") -> return lEnv
+      (DoubleLit _, "Double") -> return lEnv
+      (CharLit _, "Char") -> return lEnv
+      (StringLit _, "String") -> return lEnv -- TODO maybe list of Chars
+      _ -> fail failMsg
+    (ListPat ps, ListType t) -> foldM (flip $ matchAgainstType t) lEnv $ ps
+    (TuplePat p ps, TupleType t ts) -> if length ps == length ts
+      then foldM (flip . uncurry $ matchAgainstType) lEnv $ zip (t:ts) (p:ps)
+      else fail failMsg
+    _ -> fail failMsg  -- TODO
 
 ------------------- Declaration types ----------------------
 checkDeclType :: Decl -> TypeM ()
