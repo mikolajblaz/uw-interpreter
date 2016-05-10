@@ -117,8 +117,14 @@ checkType (TupleExp e es) = do
 
 checkType (ListExp es) = liftM ListType $ sameTypes es
 
--- TODO
--- checkType (Case exp alts) = do
+checkType (Case e alts) = do
+  t <- checkType e
+  -- get types of all expressions
+  (t:ts) <- mapM (checkAltType t) alts
+  -- check if their type is the same as the type of first one
+  mapM_ (simpleCheck t) ts
+  return t
+
 --     -- Try to match expression against patterns one by one.
 --     (exp, env) <- asum $ map (tryMatch exp) alts
 --     -- Evaluate matched 'static expresion'
@@ -135,6 +141,22 @@ checkType (ListExp es) = liftM ListType $ sameTypes es
 checkType (GConExp gCon) = fail $ "TypeCheckError: Undefined case: GCon"
 checkType x = fail $ "TypeCheckError: Undefined case: " ++ show x
 
+
+--------------------- Pattern types ------------------------
+-- | Check if pattern has the given type and return type of matched expression
+checkAltType :: Type -> Alt -> TypeM Type
+checkAltType t (Alt pat e) = do
+  env <- ask
+  (t, newEnv) <- case evalPat pat env of
+    Bad err -> fail err
+    Ok sType -> sType
+
+  simpleCheck t pt
+  local (const newEnv) $ checkType e
+
+
+evalPat :: Pat -> Env -> Err Type
+evalPat pat env = undefined
 
 ------------------- Declaration types ----------------------
 checkDeclType :: Decl -> TypeM ()
