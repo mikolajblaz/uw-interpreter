@@ -160,7 +160,7 @@ matchAgainstExp exp pat jLEnv@(Just lEnv) = do
       Ok newEnv -> return $ Just newEnv
       Bad err -> return Nothing
     (WildCard, e) -> return $ jLEnv
-    (LitPat _, l) -> return $ jLEnv -- TODO: check equality
+    (LitPat lp, LitExp le) -> return $ if lp == le then jLEnv else Nothing
     (ListPat ps, ListExp es) -> foldM (flip . uncurry $ matchAgainstExp) jLEnv $ zip es ps
     (TuplePat p ps, TupleExp e es) -> foldM (flip . uncurry $ matchAgainstExp) jLEnv $ zip (e:es) (p:ps)
     _ -> return Nothing  -- TODO
