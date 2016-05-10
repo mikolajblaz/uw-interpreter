@@ -17,9 +17,6 @@ Decl.        TopDecl ::= Decl ;
 
 terminator TopDecl ";" ;
 separator Decl ";" ;
-separator nonempty Constr "|" ;
-
-Data.        DataDecl ::= "data" TyConstr "=" [Constr] ;
 
 Signature.   Decl ::= Signature ;                       --- signature declaration
 FunDecl.     Decl ::= Var [Pat1] "=" Exp ;              --- function declaration
@@ -32,10 +29,10 @@ separator nonempty Signature "," ;
 
 ---- Types ----
 
-DataTyCon.   TyConstr ::= TyCon [TyVar] ;
+Data.        DataDecl ::= "data" Con "=" [Constr] ;
 DataCon.     Constr ::= Con [Type2] ;
 
-separator TyVar "" ;
+separator nonempty Constr "|" ;
 separator Type2 "" ;
 
 
@@ -44,14 +41,13 @@ FunType.     Type ::= Type1 "->" Type ;                 --- function type
 AppType.     Type1 ::= Type1 Type2 ;                    --- type application
 
 GTyCon.      Type2 ::= GTyCon ;
-TyVar.       Type2 ::= TyVar ;
 TupleType.   Type2 ::= "(" Type "," [Type] ")" ;        --- tuple type
 ListType.    Type2 ::= "[" Type "]" ;                   --- list type
 
 coercions Type 2;
 separator nonempty Type "," ;
 
-SimpleTyCon. GTyCon ::= TyCon ;
+SimpleTyCon. GTyCon ::= Con ;
 UnitTyCon.   GTyCon ::= "()" ;                          --- unit constructor
 ListTyCon.   GTyCon ::= "[]" ;                          --- list constructor
 FunTyCon.    GTyCon ::= "(->)" ;                        --- function constructor
@@ -137,9 +133,6 @@ separator nonempty Comma "" ;
 ---- Lexical syntax ----
 token Var (lower ( letter | digit )* ) ;
 token Con (upper ( letter | digit )* ) ;
-
-ConTyCon.    TyCon ::= Con ;
-VarTyVar.    TyVar ::= Var ;
 
 IntLit.      Literal ::= Integer ;
 DoubleLit.   Literal ::= Double ;

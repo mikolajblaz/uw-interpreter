@@ -9,7 +9,7 @@ import ErrM
 import Environment
 
 -- | Data environment
-type DataEnv = Map.Map TyCon ([TyVar], Map.Map Con [Type])
+type DataEnv = Map.Map Con (Map.Map Con [Type])
 
 -- | Build data environment basing on 'data' declarations
 buildDataEnv :: [TopDecl] -> Err DataEnv
@@ -22,11 +22,11 @@ type TypeM = EvalM Type
 
 -- TODO: remove all but Bool and Int maybe
 boolType, intType, doubleType, charType, stringType :: Type
-boolType = GTyCon $ SimpleTyCon $ ConTyCon $ Con "Bool"
-intType = GTyCon $ SimpleTyCon $ ConTyCon $ Con "Int"
-doubleType = GTyCon $ SimpleTyCon $ ConTyCon $ Con "Double"
-charType = GTyCon $ SimpleTyCon $ ConTyCon $ Con "Char"
-stringType = GTyCon $ SimpleTyCon $ ConTyCon $ Con "String" -- TODO: maybe list of chars
+boolType = GTyCon $ SimpleTyCon $ Con "Bool"
+intType = GTyCon $ SimpleTyCon $ Con "Int"
+doubleType = GTyCon $ SimpleTyCon $ Con "Double"
+charType = GTyCon $ SimpleTyCon $ Con "Char"
+stringType = GTyCon $ SimpleTyCon $ Con "String" -- TODO: maybe list of chars
 
 instance EnvVal Type where
   getVal (Signature (Sign var ty)) = Just ty
@@ -107,7 +107,7 @@ checkType (Let decls e) = do {
   local (const nEnv) $ checkType e
 }
 
-checkType (LitExp lit) = return $ GTyCon $ SimpleTyCon $ ConTyCon $ Con $ case lit of
+checkType (LitExp lit) = return $ GTyCon $ SimpleTyCon $ Con $ case lit of
   IntLit _ -> "Int"
   DoubleLit _ -> "Double"
   CharLit _ -> "Char"
@@ -155,7 +155,7 @@ matchAgainstType t pat lEnv = do
     (VarPat var, t) -> case setLocalVar var t lEnv of
       Ok newEnv -> return newEnv
       Bad err -> fail err
-    (LitPat lit, GTyCon (SimpleTyCon (ConTyCon (Con con)))) -> case (lit, con) of
+    (LitPat lit, GTyCon (SimpleTyCon (Con con))) -> case (lit, con) of
       (IntLit _, "Int") -> return lEnv
       (DoubleLit _, "Double") -> return lEnv
       (CharLit _, "Char") -> return lEnv
