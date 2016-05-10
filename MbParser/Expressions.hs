@@ -30,8 +30,7 @@ falseExp = GConExp $ SimpleCon $ Con "False"
 
 instance EnvVal Exp where
   getVal (Signature (Sign var ty)) = Nothing
-  getVal (FunDecl _ _ _) = undefined
-  getVal (TmpVarDecl _ exp) = Just exp
+  getVal (VarDecl _ exp) = Just exp
 
 
 evalExpVal :: Exp -> ExpM Exp

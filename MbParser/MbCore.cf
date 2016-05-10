@@ -19,9 +19,7 @@ terminator TopDecl ";" ;
 separator Decl ";" ;
 
 Signature.   Decl ::= Signature ;                       --- signature declaration
-FunDecl.     Decl ::= Var [Pat1] "=" Exp ;              --- function declaration
-TmpVarDecl.  Decl ::= Var "=" Exp ;
---PatDecl.     Decl ::= Pat "=" Exp ;                     --- pattern declaration
+VarDecl.     Decl ::= Var "=" Exp ;
 
 Sign.        Signature ::= Var "::" Type ;
 separator nonempty Signature "," ;

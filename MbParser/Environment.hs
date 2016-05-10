@@ -42,16 +42,9 @@ assignStaticVal :: Var -> StaticVal val -> Env val -> Env val
 assignStaticVal v sVal (Env oEnv lEnv) = Env (Map.insert v sVal oEnv) lEnv
 
 -- | Extract variable from declaration
--- TODO: maybe extract many vars, if declaration is "Pattern = Exp"
 getVar :: Decl -> Var
 getVar (Signature (Sign var ty)) = var
-getVar (FunDecl var _ _) = var
-getVar (TmpVarDecl var _) = var
-
-splitDecl :: Decl -> (Var, val)
-splitDecl = undefined
--- TODO: equivalent of getVal and getVar
-
+getVar (VarDecl var _) = var
 
 
 ----------------------- Declarations evaluation ------------------------
@@ -64,8 +57,6 @@ setLocalVar var exp localEnv = if Map.member var localEnv
 
 -- | Turn list of declarations to a map, where each varibale has its own
 -- expression as value
--- TODO: we assume, that each variable has one expression bound
--- TODO: implements patterns
 collectLocalDecl :: EnvVal val => [Decl] -> Err (LocalEnv val)
 collectLocalDecl decls = foldM insertDecl Map.empty decls
   where insertDecl lEnv d = case getVal d of {

@@ -30,8 +30,7 @@ stringType = GTyCon $ SimpleTyCon $ Con "String" -- TODO: maybe list of chars
 
 instance EnvVal Type where
   getVal (Signature (Sign var ty)) = Just ty
-  getVal (FunDecl _ _ _) = Nothing
-  getVal (TmpVarDecl _ _) = Nothing
+  getVal (VarDecl _ _) = Nothing
 
 -- | Check type correctness of a given expression and initial type environment
 staticTypeCheck :: Exp -> Env Type -> Err Type
@@ -170,11 +169,8 @@ matchAgainstType t pat lEnv = do
 ------------------- Declaration types ----------------------
 checkDeclType :: Decl -> TypeM ()
 checkDeclType (Signature _) = return ()
-checkDeclType (TmpVarDecl var exp) = do
+checkDeclType (VarDecl var exp) = do
   t1 <- checkType $ VarExp var
   t2 <- checkType exp
   simpleCheck t1 t2
   return ()
-
--- TODO
-checkDeclType (FunDecl _ _ _) = fail $ "TypeCheckError: Undefined FunDecl"
