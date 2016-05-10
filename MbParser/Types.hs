@@ -38,38 +38,41 @@ staticTypeCheck :: Exp -> Env Type -> Err Type
 staticTypeCheck exp env = runReaderT (checkType exp) env
 
 -- | Evaluate type of expression and check equality
-compareType :: Exp -> Type -> TypeM Type
-compareType e t = checkType e >>= equalityCheck t
+compareType :: Type -> Exp -> TypeM Type
+compareType t e = checkType e >>= simpleCheck t
 
-compareTypes :: [Exp] -> [Type] -> TypeM ()
-compareTypes es ts = mapM_ (uncurry compareType) $ zip es ts
+compareTypes :: [Type] -> [Exp] -> TypeM ()
+compareTypes ts es = mapM_ (uncurry compareType) $ zip ts es
 
 -- | Simple type comparison
-equalityCheck :: Type -> Type -> TypeM Type
-equalityCheck tExpected tActual = if tExpected == tActual
+simpleCheck :: Type -> Type -> TypeM Type
+simpleCheck tExpected tActual = if tExpected == tActual
     then return tActual
     else fail $ "TypeCheckError: Expected " ++ show tExpected ++ ", got " ++ show tActual
 
+-- | Check if type of all expressions is equal
+sameTypes :: [Exp] -> TypeM Type
+sameTypes (e:es) = do
+  t <- checkType e
+  mapM_ (compareType t) es
+  return t
+
 checkType :: Exp -> TypeM Type
 checkType (If e1 e2 e3) = do
-  compareType e1 boolType
-  t2 <- checkType e2
-  t3 <- checkType e3
-  if (t2 == t3)
-    then return t2
-    else fail "TypeCheckError: Both \"If\" branches should have the same type"
+  compareType boolType e1
+  sameTypes [e2, e3]
 
-checkType (OAdd e1 e2) = compareTypes [e1, e2] [intType, intType] >> return intType
-checkType (OSub e1 e2) = compareTypes [e1, e2] [intType, intType] >> return intType
-checkType (OMul e1 e2) = compareTypes [e1, e2] [intType, intType] >> return intType
-checkType (ODiv e1 e2) = compareTypes [e1, e2] [intType, intType] >> return intType
+checkType (OAdd e1 e2) = compareTypes [intType, intType] [e1, e2] >> return intType
+checkType (OSub e1 e2) = compareTypes [intType, intType] [e1, e2] >> return intType
+checkType (OMul e1 e2) = compareTypes [intType, intType] [e1, e2] >> return intType
+checkType (ODiv e1 e2) = compareTypes [intType, intType] [e1, e2] >> return intType
 
-checkType (ONeg e1) = compareType e1 intType >> return intType
+checkType (ONeg e1) = compareType intType e1 >> return intType
 
-checkType (EOpE e1 compOp e2) = compareTypes [e1, e2] [intType, intType] >> return boolType
+checkType (EOpE e1 compOp e2) = compareTypes [intType, intType] [e1, e2] >> return boolType
 
-checkType (OAnd e1 e2) = compareTypes [e1, e2] [boolType, boolType] >> return boolType
-checkType (OOr e1 e2) = compareTypes [e1, e2] [boolType, boolType] >> return boolType
+checkType (OAnd e1 e2) = compareTypes [boolType, boolType] [e1, e2] >> return boolType
+checkType (OOr e1 e2) = compareTypes [boolType, boolType] [e1, e2] >> return boolType
 
 -- | Get 'static expression' from environment and evaluate it.
 checkType (VarExp var) = do
@@ -82,7 +85,7 @@ checkType (VarExp var) = do
 checkType (FApp e1 e2) = do
   t1 <- checkType e1
   case t1 of
-    FunType t2 t3 -> compareType e2 t2 >> return t3
+    FunType t2 t3 -> compareType t2 e2 >> return t3
     _ -> fail "TypeCheckError: Only function can be applied to an argument."
 
 checkType (Lambda ((Sign v t):signs) exp) = do
@@ -112,8 +115,7 @@ checkType (TupleExp e es) = do
   ts <- mapM checkType es
   return $ TupleType t ts
 
--- TODO
--- checkType (ListExp es) = mapM checkType es >>= return . ListType
+checkType (ListExp es) = liftM ListType $ sameTypes es
 
 -- TODO
 -- checkType (Case exp alts) = do
@@ -140,7 +142,7 @@ checkDeclType (Signature _) = return ()
 checkDeclType (TmpVarDecl var exp) = do
   t1 <- checkType $ VarExp var
   t2 <- checkType exp
-  equalityCheck t1 t2
+  simpleCheck t1 t2
   return ()
 
 -- TODO
