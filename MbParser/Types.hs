@@ -103,7 +103,7 @@ checkType (Let decls e) = do {
   let Env oEnv lEnv = nEnv in
   --fail $ show lEnv;
   -- check if type of declaration matches signature (stored in nEnv)
-  --mapM_ ((local (const nEnv)) . checkDeclType) decls;
+  mapM_ ((local (const nEnv)) . checkDeclType) decls;
   local (const nEnv) $ checkType e
 }
 
