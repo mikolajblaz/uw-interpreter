@@ -1,6 +1,7 @@
 module Expressions where
 
 import Control.Monad.Reader
+import Control.Monad.Trans.Maybe
 import Control.Applicative
 import Data.Foldable ( asum )
 import qualified Data.Map as Map
@@ -12,13 +13,14 @@ import Environment
 type StaticExp = StaticVal Exp
 type ExpM = EvalM Exp
 
+-- TODO
 -- instance Applicative Err where
 --   pure = Ok
 --   (Bad s) <*> _ = Bad s
 --   (Ok f) <*> o  = liftM f o
 --
 -- instance Alternative Err where
---   empty = Bad "RunTimeError: Non-exhaustive patterns in case"
+--   empty = mzero
 --   (<|>) = mplus
 
 
@@ -120,15 +122,19 @@ evalExp lst@(ListExp _) = addEnv $ return lst
 
 evalExp (Case exp alts) = do
     -- Try to match expression against patterns one by one.
-    (exp, env) <- asum $ map (tryMatch exp) alts
-    -- Evaluate matched 'static expression'
-    local (const env) $ evalExp exp
+    matches <- mapM (tryMatch exp) alts
+    -- Choose first matching pattern (using <|>)
+    case asum matches of
+      Just (e, env) -> local (const env) $ evalExp e
+      Nothing -> fail "RunTimeError: Non-exhaustive patterns in case"
   where
-    tryMatch :: Exp -> Alt -> ExpM StaticExp
+    tryMatch :: Exp -> Alt -> ExpM (Maybe StaticExp)
     tryMatch e1 (Alt pat e2) = do
       env <- ask
-      lEnv <- matchAgainstExp e1 pat Map.empty
-      return (e2, expandEnv lEnv env)
+      lEnv <- matchAgainstExp e1 pat $ Just Map.empty
+      case lEnv of
+        Just lEnv -> return $ Just (e2, expandEnv lEnv env)
+        Nothing -> return Nothing
 
 -------- TODO: not implemented yet
 
@@ -143,15 +149,18 @@ binOp e1 e2 op = do
 
 
 ------------- Pattern matching -------------------
-matchAgainstExp :: Exp -> Pat -> LocalEnv Exp -> ExpM (LocalEnv Exp)
-matchAgainstExp exp pat lEnv = do
+type PatM = MaybeT ExpM
+
+matchAgainstExp :: Exp -> Pat -> Maybe (LocalEnv Exp) -> ExpM (Maybe (LocalEnv Exp))
+matchAgainstExp _ _ Nothing = return Nothing
+matchAgainstExp exp pat jLEnv@(Just lEnv) = do
   (evaledExp, env) <- evalExp exp
   case (pat, evaledExp) of
     (VarPat var, e) -> case setLocalVar var e lEnv of
-      Ok newEnv -> return newEnv
-      Bad err -> fail err
-    (WildCard, e) -> return lEnv
-    (LitPat _, l) -> return lEnv -- TODO: assuming type check, TODO: check equality
-    (ListPat ps, ListExp es) -> foldM (flip . uncurry $ matchAgainstExp) lEnv $ zip es ps
-    (TuplePat p ps, TupleExp e es) -> foldM (flip . uncurry $ matchAgainstExp) lEnv $ zip (e:es) (p:ps)
-    _ -> mzero  -- TODO
+      Ok newEnv -> return $ Just newEnv
+      Bad err -> return Nothing
+    (WildCard, e) -> return $ jLEnv
+    (LitPat _, l) -> return $ jLEnv -- TODO: check equality
+    (ListPat ps, ListExp es) -> foldM (flip . uncurry $ matchAgainstExp) jLEnv $ zip es ps
+    (TuplePat p ps, TupleExp e es) -> foldM (flip . uncurry $ matchAgainstExp) jLEnv $ zip (e:es) (p:ps)
+    _ -> return Nothing  -- TODO
