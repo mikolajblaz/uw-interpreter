@@ -1,0 +1,2 @@
+main :: Int;
+main = (\x :: Int, y :: Int. x end) 4 (5/0);
