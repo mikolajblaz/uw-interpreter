@@ -1,6 +1,7 @@
 module Expressions where
 
 import Control.Monad.Reader
+import Control.Applicative
 import Data.Foldable ( asum )
 import qualified Data.Map as Map
 
@@ -10,6 +11,16 @@ import ErrM
 import Environment
 type StaticExp = StaticVal Exp
 type ExpM = EvalM Exp
+
+instance Applicative Err where
+  pure = Ok
+  (Bad s) <*> _ = Bad s
+  (Ok f) <*> o  = liftM f o
+
+instance Alternative Err where
+  empty = Bad "RunTimeError: Non-exhaustive patterns in case"
+  (<|>) = mplus
+
 
 trueExp, falseExp :: Exp
 trueExp = GConExp $ SimpleCon $ Con "True"
