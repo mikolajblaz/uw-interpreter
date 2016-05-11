@@ -24,9 +24,18 @@ buildData (DataDecl (Data con constrs)) env = foldM (insertCon con) env constrs
       then fail $ "TypeCheckError: Type constructor " ++ show con ++ "already declared"
       else return $ Map.insert con (dataCon, ts) env
 
-generateLambdaSignature :: Con -> [Type] -> [Signature]
-generateLambdaSignature (Con str) ts = let prefix = ('_':str) in
-  zipWith (\num t -> Sign (Var $ prefix ++ show num) t) ([1..] :: [Integer]) ts
+-- | Get type of type constructor
+conToType :: Con -> DataEnv -> Err Type
+conToType con env = do
+  case Map.lookup con env of
+    Nothing -> fail $ "TypeCheckError: Undeclared constructor " ++ show con
+    Just (dataCon, ts) -> return $ generateConType con ts dataCon
+
+-- | Get type of type constructor based on list of type arguments and target
+-- data type
+generateConType :: Con -> [Type] -> Con -> Type
+generateConType con [] dataCon = TyCon dataCon
+generateConType con (t:ts) dataCon = FunType t $ generateConType con ts dataCon
 
 ----------------- Static type check ---------------------------
 type StaticType = StaticVal Type
@@ -139,7 +148,10 @@ checkType (Case e alts) = do
   mapM_ (simpleCheck t) ts
   return t
 
-checkType (ConExp con) = return $ TyCon con
+-- TODO
+checkType (ConExp con) = case conToType con Map.empty of
+  Ok t -> return t
+  Bad err -> fail err
 
 
 --------------------- Pattern types ------------------------
