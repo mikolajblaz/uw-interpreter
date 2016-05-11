@@ -12,7 +12,7 @@ import ErrM
 -- Instances: Exp and Type
 class EnvVal val where
   -- | Extract value from declaration
-  -- Nothing is not an error, it means that value cannot be extracted from
+  -- 'Nothing' is not an error, it means that value cannot be extracted from
   -- specific type of declarations
   getVal :: Decl -> Maybe val
 

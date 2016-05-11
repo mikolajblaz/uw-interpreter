@@ -25,8 +25,8 @@ type ExpM = EvalM Exp
 
 
 trueExp, falseExp :: Exp
-trueExp = GConExp $ SimpleCon $ Con "True"
-falseExp = GConExp $ SimpleCon $ Con "False"
+trueExp = ConExp $ Con "True"
+falseExp = ConExp $ Con "False"
 
 instance EnvVal Exp where
   getVal (Signature (Sign var ty)) = Nothing
@@ -137,7 +137,7 @@ evalExp (Case exp alts) = do
 
 -------- TODO: not implemented yet
 
-evalExp (GConExp gCon) = undefined
+evalExp (ConExp gCon) = undefined
 
 binOp :: Exp -> Exp -> (Integer -> Integer -> Integer) -> ExpM Exp
 binOp e1 e2 op = do
@@ -148,8 +148,6 @@ binOp e1 e2 op = do
 
 
 ------------- Pattern matching -------------------
-type PatM = MaybeT ExpM
-
 -- | Try to match expression against pattern.
 -- If pattern is a varibale or wildcard, there is no need to evaluate expression
 matchAgainstExp :: Exp -> Pat -> Maybe (LocalEnv Exp) -> ExpM (Maybe (LocalEnv Exp))
@@ -166,4 +164,6 @@ matchAgainstExp exp pat jLEnv@(Just lEnv) = case pat of
       (LitPat lp, LitExp le) -> return $ if lp == le then jLEnv else Nothing
       (ListPat ps, ListExp es) -> foldM (flip . uncurry $ matchAgainstExp) jLEnv $ zip es ps
       (TuplePat p ps, TupleExp e es) -> foldM (flip . uncurry $ matchAgainstExp) jLEnv $ zip (e:es) (p:ps)
+      (ZeroConPat con1, ConExp con2) -> return $ if con1 == con2 then jLEnv else Nothing
+      (ManyConPat con [p], FApp e1 e2) -> foldM (flip . uncurry $ matchAgainstExp) jLEnv $ zip (e2:e1) (p:ZeroConPat con)
       _ -> return Nothing  -- TODO

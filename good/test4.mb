@@ -1,2 +1,4 @@
 main :: String;
 main = "ghf";
+
+m :: Int;

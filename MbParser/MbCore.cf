@@ -28,28 +28,20 @@ separator nonempty Signature "," ;
 ---- Types ----
 
 Data.        DataDecl ::= "data" Con "=" [Constr] ;
-DataCon.     Constr ::= Con [Type2] ;
+DataCon.     Constr ::= Con [Type1] ;
 
 separator nonempty Constr "|" ;
-separator Type2 "" ;
+separator Type1 "" ;
 
 
 FunType.     Type ::= Type1 "->" Type ;                 --- function type
 
-AppType.     Type1 ::= Type1 Type2 ;                    --- type application
+TyCon.       Type1 ::= Con ;
+TupleType.   Type1 ::= "(" Type "," [Type] ")" ;        --- tuple type
+ListType.    Type1 ::= "[" Type "]" ;                   --- list type
 
-GTyCon.      Type2 ::= GTyCon ;
-TupleType.   Type2 ::= "(" Type "," [Type] ")" ;        --- tuple type
-ListType.    Type2 ::= "[" Type "]" ;                   --- list type
-
-coercions Type 2;
+coercions Type 1;
 separator nonempty Type "," ;
-
-SimpleTyCon. GTyCon ::= Con ;
-UnitTyCon.   GTyCon ::= "()" ;                          --- unit constructor
-ListTyCon.   GTyCon ::= "[]" ;                          --- list constructor
-FunTyCon.    GTyCon ::= "(->)" ;                        --- function constructor
-TupleTyCon.  GTyCon ::= "(" [Comma] ")" ;               --- tuple constructor
 
 
 
@@ -63,7 +55,7 @@ Case.        Exp6 ::= "case" Exp "of" "{" [Alt] "}" ;         --- case expressio
 FApp.        Exp7 ::= Exp7 Exp8 ;                       --- function application
 
 VarExp.      Exp8 ::= Var ;                             --- variable
-GConExp.     Exp8 ::= GCon ;                            --- general constructor
+ConExp.      Exp8 ::= Con ;                             --- general constructor
 LitExp.      Exp8 ::= Literal ;
 TupleExp.    Exp8 ::= "(" Exp "," [Exp] ")" ;           --- tuple
 ListExp.     Exp8 ::= "[" [Exp] "]" ;                   --- list
@@ -105,10 +97,10 @@ OGte.        CompOp ::= ">=" ;
 
 ---- Patterns ----
 
-ManyGConPat. Pat ::= GCon [Pat1] ;                      --- arity gcon > 0
+ManyConPat.  Pat ::= Con [Pat1] ;                      --- arity con > 0
 
 VarPat.      Pat1 ::= Var ;
-ZeroGConPat. Pat1 ::= GCon ;                            --- arity gcon = 0
+ZeroConPat.  Pat1 ::= Con ;                            --- arity con = 0
 LitPat.      Pat1 ::= Literal ;
 WildCard.    Pat1 ::= "_" ;
 TuplePat.    Pat1 ::= "(" Pat "," [Pat] ")" ;           --- tuple
@@ -117,14 +109,6 @@ ListPat.     Pat1 ::= "[" [Pat] "]" ;                   --- list
 coercions Pat 1;
 separator nonempty Pat "," ;
 separator nonempty Pat1 "" ;
-
-SimpleCon.   GCon ::= Con ;
-UnitCon.     GCon ::= "()" ;
-ListCon.     GCon ::= "[]" ;
-TupleCon.    GCon ::= "(" [Comma] ")" ;
-
-Comma.       Comma ::= "," ;
-separator nonempty Comma "" ;
 
 
 

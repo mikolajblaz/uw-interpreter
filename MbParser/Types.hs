@@ -9,12 +9,24 @@ import ErrM
 import Environment
 
 -- | Data environment
-type DataEnv = Map.Map Con (Map.Map Con [Type])
+type DataEnv = Map.Map Con (Con, [Type])
 
 -- | Build data environment basing on 'data' declarations
 buildDataEnv :: [TopDecl] -> Err DataEnv
-buildDataEnv [] = Ok Map.empty
-buildDataEnv x = Bad $ show x
+buildDataEnv ds = do
+  foldM (flip buildData) Map.empty ds
+
+buildData :: TopDecl -> DataEnv -> Err DataEnv
+buildData (DataDecl (Data con constrs)) env = foldM (insertCon con) env constrs
+  where
+    insertCon :: Con -> DataEnv -> Constr -> Err DataEnv
+    insertCon dataCon env (DataCon con ts) = if Map.member con env
+      then fail $ "TypeCheckError: Type constructor " ++ show con ++ "already declared"
+      else return $ Map.insert con (dataCon, ts) env
+
+generateLambdaSignature :: Con -> [Type] -> [Signature]
+generateLambdaSignature (Con str) ts = let prefix = ('_':str) in
+  zipWith (\num t -> Sign (Var $ prefix ++ show num) t) ([1..] :: [Integer]) ts
 
 ----------------- Static type check ---------------------------
 type StaticType = StaticVal Type
@@ -22,11 +34,11 @@ type TypeM = EvalM Type
 
 -- TODO: remove all but Bool and Int maybe
 boolType, intType, doubleType, charType, stringType :: Type
-boolType = GTyCon $ SimpleTyCon $ Con "Bool"
-intType = GTyCon $ SimpleTyCon $ Con "Int"
-doubleType = GTyCon $ SimpleTyCon $ Con "Double"
-charType = GTyCon $ SimpleTyCon $ Con "Char"
-stringType = GTyCon $ SimpleTyCon $ Con "String" -- TODO: maybe list of chars
+boolType = TyCon $ Con "Bool"
+intType = TyCon $ Con "Int"
+doubleType = TyCon $ Con "Double"
+charType = TyCon $ Con "Char"
+stringType = TyCon $ Con "String" -- TODO: maybe list of chars
 
 instance EnvVal Type where
   getVal (Signature (Sign var ty)) = Just ty
@@ -106,7 +118,7 @@ checkType (Let decls e) = do {
   local (const nEnv) $ checkType e
 }
 
-checkType (LitExp lit) = return $ GTyCon $ SimpleTyCon $ Con $ case lit of
+checkType (LitExp lit) = return $ TyCon $ Con $ case lit of
   IntLit _ -> "Int"
   DoubleLit _ -> "Double"
   CharLit _ -> "Char"
@@ -127,10 +139,7 @@ checkType (Case e alts) = do
   mapM_ (simpleCheck t) ts
   return t
 
--------- TODO: not implemented yet
-
-checkType (GConExp gCon) = fail $ "TypeCheckError: Undefined case: GCon"
-checkType x = fail $ "TypeCheckError: Undefined case: " ++ show x
+checkType (ConExp con) = return $ TyCon con
 
 
 --------------------- Pattern types ------------------------
@@ -154,7 +163,7 @@ matchAgainstType t pat lEnv = do
     (VarPat var, t) -> case setLocalVar var t lEnv of
       Ok newEnv -> return newEnv
       Bad err -> fail err
-    (LitPat lit, GTyCon (SimpleTyCon (Con con))) -> case (lit, con) of
+    (LitPat lit, TyCon (Con con)) -> case (lit, con) of
       (IntLit _, "Int") -> return lEnv
       (DoubleLit _, "Double") -> return lEnv
       (CharLit _, "Char") -> return lEnv
