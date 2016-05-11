@@ -5,6 +5,7 @@ import qualified Data.Map as Map
 
 import AbsMbCore
 import ErrM
+import PrintMbCore
 
 import Environment
 
@@ -39,7 +40,7 @@ compareTypes de ts es = mapM_ (uncurry $ compareType de) $ zip ts es
 simpleCheck :: Type -> Type -> TypeM Type
 simpleCheck tExpected tActual = if tExpected == tActual
     then return tActual
-    else fail $ "TypeCheckError: Expected " ++ show tExpected ++ ", got " ++ show tActual
+    else fail $ "TypeCheckError: Expected " ++ printTree tExpected ++ ", got " ++ printTree tActual
 
 -- | Check if type of all expressions is equal
 sameTypes :: DataEnv -> [Exp] -> TypeM Type
@@ -136,7 +137,7 @@ checkAltType de t (Alt pat e) = do
 -- | Match type against pattern and change local environment
 matchAgainstType :: DataEnv -> Type -> Pat -> LocalEnv Type -> Err (LocalEnv Type)
 matchAgainstType de t pat lEnv = do
-  let failMsg = "TypeCheckError: type of " ++ show pat ++ " doesn't match expected type " ++ show t
+  let failMsg = "TypeCheckError: type of " ++ printTree pat ++ " doesn't match expected type " ++ printTree t
   case (pat, t) of
     (WildCard, _) -> return lEnv
     (VarPat var, t) -> case setLocalVar var t lEnv of
