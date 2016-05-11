@@ -13,16 +13,6 @@ import Environment
 type StaticExp = StaticVal Exp
 type ExpM = EvalM Exp
 
--- TODO
--- instance Applicative Err where
---   pure = Ok
---   (Bad s) <*> _ = Bad s
---   (Ok f) <*> o  = liftM f o
---
--- instance Alternative Err where
---   empty = mzero
---   (<|>) = mplus
-
 --------------------- Helper functions --------------------
 
 trueExp, falseExp :: Exp
@@ -188,4 +178,4 @@ matchAgainstExp exp pat jLEnv@(Just lEnv) = case pat of
       (ConPat con1 [], _) -> return Nothing
       (ConPat con ps, FApp e1 e2) ->
         foldM (flip . uncurry $ matchAgainstExp) jLEnv $ [(e1, ConPat con (init ps)), (e2, last ps)]
-      _ -> return Nothing  -- TODO
+      _ -> return Nothing

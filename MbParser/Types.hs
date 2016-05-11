@@ -13,13 +13,12 @@ import Environment
 type StaticType = StaticVal Type
 type TypeM = EvalM Type
 
--- TODO: remove all but Bool and Int maybe
 boolType, intType, doubleType, charType, stringType :: Type
 boolType = TyCon $ Con "Bool"
 intType = TyCon $ Con "Int"
 doubleType = TyCon $ Con "Double"
 charType = TyCon $ Con "Char"
-stringType = TyCon $ Con "String" -- TODO: maybe list of chars
+stringType = TyCon $ Con "String"
 
 instance EnvVal Type where
   getVal (Signature (Sign var ty)) = Just ty
@@ -147,7 +146,7 @@ matchAgainstType de t pat lEnv = do
       (IntLit _, "Int") -> return lEnv
       (DoubleLit _, "Double") -> return lEnv
       (CharLit _, "Char") -> return lEnv
-      (StringLit _, "String") -> return lEnv -- TODO maybe list of Chars
+      (StringLit _, "String") -> return lEnv
       _ -> fail failMsg
     (ListPat ps, ListType t) -> foldM (flip $ matchAgainstType de t) lEnv $ ps
     (TuplePat p ps, TupleType t ts) -> if length ps == length ts

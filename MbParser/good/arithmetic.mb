@@ -34,7 +34,6 @@ bind = let {x :: Int; y :: Int; x = 10; y = 5 } in
          end
        end;
 
--- TODO: recursion
 rec :: Int;
 -- rec = 6
 rec = let {r1 :: Int; r1 = r2; r2 :: Int; r2 = 6} in r1 end;
