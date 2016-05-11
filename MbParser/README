@@ -1,0 +1,50 @@
+Opis języka MB
+Autor: Mikołaj Błaż
+Nr indeksu: 346862
+
+1. Język MB jest językiem funkcyjnym wzorowanym na języku Haskell.
+Program w języku MB nie jest poprawnym syntaktycznie programem w Haskellu ze
+względu na następujące zmiany w składni:
+- instrukcje 'let', 'if', 'lambda' są zakończone słowem kluczowym 'end'
+  (żeby uniknąć niejednoznaczności przy parsowaniu)
+- funkcje anonimowe mają postać: '\x::Type1, y :: Type2. x + y'
+
+Gramtyka bezkontekstowa (kompilowalna za pomocą programu BNFC)
+języka MB znajduje się w pliku "Mikołaj_Błaż_core.cf",
+przykładowy program w podkatalogach "good" oraz "bad".
+
+2. Na język MB składają się:
+- wbudowane typy Int, Bool, Char, String oraz List, IntMaybe, IntEither
+  (ostatnie 3 operują tylko na liczbach naturalnych)
+- wyrażenia arytmetyczne i logiczne
+- wieloargumentowe funkcje (wyższego rzędu) z rekurencją i częściową aplikacją
+- monomorficzne i rekurencyjne typy algebraiczne
+- krotki
+- wielopoziomowy pattern matching
+
+
+3. Warunki kontekstowe języka MB:
+
+Każdy wykonywalny program musi posiadać zmienną "main" o dowolnej sygnaturze.
+Wykonanie programu polega na wypisaniu wartości zmiennej "main".
+
+Każda zmienna w programie może być zdefniowana tylko raz,
+musi być też zadeklarowana jej sygnatura.
+
+
+4. Cechy języka
+
+Zmienne mają wiązanie statyczne, typ każdej nowo wprowadzanej zmiennej
+musi być podany (również w funkcjach anonimowych).
+
+Identyfikatory zmiennych muszą zaczynać się od małej litery, identyfikatory
+typów i konstruktorów od wielkiej litery.
+
+Dodatkową cechą języka jest leniwość: wyrażenia nie są ewaluowane bez potrzeby.
+
+Język posiada wbudowaną statyczną kontrolę typów (wyrażeń, deklaracji, wzorców
+w pattern matchingu).
+
+Lukier syntaktyczny [] dla list jest częsciowo zaimplementowany, ale nie da się
+tworzyć nowych list (ani typu [a]), jedynie działa pattern matching dla
+wyrażeń typu [a, b, c] itp.
