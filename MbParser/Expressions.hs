@@ -137,7 +137,7 @@ evalExp (Case exp alts) = do
     -- Choose first matching pattern (using <|>)
     case asum matches of
       Just (e, env) -> local (const env) $ evalExp e
-      Nothing -> fail "RunTimeError: Non-exhaustive patterns in case"
+      Nothing -> fail "RunTimeError: Non-exhaustive patterns in case expression"
   where
     tryMatch :: Exp -> Alt -> ExpM (Maybe StaticExp)
     tryMatch e1 (Alt pat e2) = do
@@ -175,6 +175,7 @@ matchAgainstExp exp pat jLEnv@(Just lEnv) = case pat of
       (ListPat ps, ListExp es) -> foldM (flip . uncurry $ matchAgainstExp) jLEnv $ zip es ps
       (TuplePat p ps, TupleExp e es) -> foldM (flip . uncurry $ matchAgainstExp) jLEnv $ zip (e:es) (p:ps)
       (ConPat con1 [], ConExp con2) -> return $ if con1 == con2 then jLEnv else Nothing
+      (ConPat con1 [], _) -> return Nothing
       (ConPat con ps, FApp e1 e2) ->
         foldM (flip . uncurry $ matchAgainstExp) jLEnv $ [(e1, ConPat con (init ps)), (e2, last ps)]
       _ -> return Nothing  -- TODO
