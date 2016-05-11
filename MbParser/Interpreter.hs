@@ -12,7 +12,7 @@ import ErrM
 
 runInterpreter :: String -> IO ()
 runInterpreter input = case result of
-    Ok s -> return ()
+    Ok s -> putStrLn s
     Bad s -> putStrLn $ "ERROR: " ++ s
   where result = do {
     abstractSyntax <- pBody $ myLexer input;

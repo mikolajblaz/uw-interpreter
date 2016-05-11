@@ -34,6 +34,6 @@ interpretMain topDecls dataEnv = let
     decls = chooseVarDecls topDecls
     rootExp = Let decls (VarExp (Var "main"))
   in do
-    finalType <- staticTypeCheck rootExp emptyEnv dataEnv
+    staticTypeCheck rootExp emptyEnv dataEnv
     finalVal <- runExp rootExp emptyEnv
-    return $ show finalVal ++ ", final type: " ++ show finalType
+    return $ show finalVal

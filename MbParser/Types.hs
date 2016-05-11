@@ -82,7 +82,6 @@ checkType de (Lambda ((Sign v t):signs) exp) = do
   env <- ask
   let recExp = if signs == [] then exp else Lambda signs exp
   recT <- local (assignStaticVal v (t, env)) $ checkType de recExp
-  fail $ show $ assignStaticVal v (t, env) env
   return $ FunType t recT
 
 checkType de (Let decls e) = do {
@@ -91,8 +90,6 @@ checkType de (Let decls e) = do {
     Ok newEnv -> return newEnv;
     Bad err -> fail err
   };
-  let Env oEnv lEnv = nEnv in
-  --fail $ show lEnv;
   -- check if type of declaration matches signature (stored in nEnv)
   mapM_ ((local (const nEnv)) . checkDeclType de) decls;
   local (const nEnv) $ checkType de e
