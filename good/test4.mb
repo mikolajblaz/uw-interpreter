@@ -1,8 +1,0 @@
-x :: Char;
-x = 'a';
-
-id :: Int -> Int;
-id = \x :: Int. x end;
-
-main :: Int;
-main = id 5;
