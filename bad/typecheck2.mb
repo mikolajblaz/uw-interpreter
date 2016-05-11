@@ -1,0 +1,5 @@
+main :: Int;
+main = x;
+
+x :: Bool;
+x = 4 < 5 || True;

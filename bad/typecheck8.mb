@@ -1,0 +1,6 @@
+-- only patterns are implemented for lists' syntax sugar []
+main :: Int;
+main = case [3, 4] of {
+  [True, 7] -> 6;
+  _ -> 7
+};

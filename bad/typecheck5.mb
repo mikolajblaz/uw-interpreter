@@ -1,0 +1,6 @@
+-- wrong argument type
+main :: Int;
+main = const 3 True;
+
+const :: Int -> Int -> Int;
+const = \x :: Int, y :: Int. x end;

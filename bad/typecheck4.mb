@@ -1,0 +1,5 @@
+main :: Int;
+main = const 3 4 5;
+
+const :: Int -> Int -> Int;
+const = \x :: Int, y :: Int. x end;

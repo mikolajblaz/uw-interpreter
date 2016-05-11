@@ -1,0 +1,15 @@
+-- Uwaga: poniższy program jest niepoprawny ze względu na błedy składniowe,
+-- ale również ze względu na brak sygnatur zmiennych
+
+-- brak średnika
+a :: Int
+a = 3;
+
+-- niepełny if
+x = if 3 == 1 then 2;
+
+-- zmienna typu z małej litery
+data small = Big | sm;
+
+-- brak 'end' na końcu
+x = \x :: Int. x;

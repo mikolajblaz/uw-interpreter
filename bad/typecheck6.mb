@@ -1,0 +1,3 @@
+-- wrong pattern type
+main :: Int;
+main = case (3, 4) of {5 -> 6};

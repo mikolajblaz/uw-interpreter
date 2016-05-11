@@ -1,0 +1,5 @@
+main :: Bool;
+main = x > undef;
+
+x :: Int;
+x = 3;

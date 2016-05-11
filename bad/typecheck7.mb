@@ -1,0 +1,6 @@
+-- wrong pattern expressions type
+main :: Int;
+main = case (3, 4) of {
+  (5, 7) -> 6;
+  _ -> (4, 5)
+};
