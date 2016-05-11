@@ -5,6 +5,7 @@ import qualified Data.Map as Map
 
 import AbsMbCore
 import ErrM
+import PrintMbCore
 
 import Environment
 import Expressions
@@ -36,4 +37,4 @@ interpretMain topDecls dataEnv = let
   in do
     staticTypeCheck rootExp emptyEnv dataEnv
     finalVal <- runExp rootExp emptyEnv
-    return $ show finalVal
+    return $ printTree finalVal
