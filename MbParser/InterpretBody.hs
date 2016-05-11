@@ -18,7 +18,7 @@ failure x = Bad $ "Undefined case: " ++ show x
 interpretBody :: Body -> Err String
 interpretBody (Body topdecls) = do
     dataEnv <- buildDataEnv dataDecls
-    interpretMain decls -- dataEnv
+    interpretMain decls dataEnv
   where
     (dataDecls, decls) = Data.List.partition isDataDecl topdecls
     isDataDecl (DataDecl _) = True
@@ -30,11 +30,11 @@ chooseVarDecls :: [TopDecl] -> [Decl]
 chooseVarDecls ((Decl d):ds) = (d : chooseVarDecls ds)
 chooseVarDecls [] = []
 
-interpretMain :: [TopDecl] -> Err String
-interpretMain topDecls = let
+interpretMain :: [TopDecl] -> DataEnv -> Err String
+interpretMain topDecls dataEnv = let
     decls = chooseVarDecls topDecls
     rootExp = Let decls (VarExp (Var "main"))
-    initEnv = Env Map.empty Map.empty
+    initEnv = (emptyEnv, dataEnv)
   in do
     finalType <- staticTypeCheck rootExp initEnv
     finalVal <- runExp rootExp initEnv

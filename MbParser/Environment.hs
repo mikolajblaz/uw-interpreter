@@ -29,7 +29,11 @@ type StaticVal val = (val, Env val)
 -- | A monad to evaluate program in
 type EvalM val = ReaderT (Env val) Err
 
--- | Operations on environment
+-- | Create empty environment
+emptyEnv :: Env val
+emptyEnv = Env Map.empty Map.empty
+
+----------------------- Operations on environment ----------------------
 lookupVar :: Var -> Env val -> Err (StaticVal val)
 lookupVar var env@(Env oEnv lEnv) = case Map.lookup var lEnv of
   Just exp -> return (exp, env)
@@ -41,13 +45,13 @@ lookupVar var env@(Env oEnv lEnv) = case Map.lookup var lEnv of
 assignStaticVal :: Var -> StaticVal val -> Env val -> Env val
 assignStaticVal v sVal (Env oEnv lEnv) = Env (Map.insert v sVal oEnv) lEnv
 
+
+----------------------- Declarations evaluation ------------------------
 -- | Extract variable from declaration
 getVar :: Decl -> Var
 getVar (Signature (Sign var ty)) = var
 getVar (VarDecl var _) = var
 
-
------------------------ Declarations evaluation ------------------------
 -- | Set value of a variable in local environment.
 -- Each variable may be present only once in a local environment.
 setLocalVar :: Var -> val -> LocalEnv val -> Err (LocalEnv val)

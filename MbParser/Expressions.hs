@@ -38,7 +38,7 @@ evalExpVal :: Exp -> ExpM Exp
 evalExpVal e = liftM fst (evalExp e)
 
 addEmptyEnv :: ExpM Exp -> ExpM StaticExp
-addEmptyEnv me = liftM (\e -> (e, Env Map.empty Map.empty)) me
+addEmptyEnv me = liftM (\e -> (e, emptyEnv)) me
 
 addEnv :: ExpM Exp -> ExpM StaticExp
 addEnv me = do
