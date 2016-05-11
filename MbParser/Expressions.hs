@@ -67,7 +67,7 @@ evalExp ce@(ConExp _) = addEmptyEnv $ return ce
 -- | Normal evaluation
 evalExp (If e1 e2 e3) = do {
   n1 <- evalExpVal e1;
-  evalExp $ if n1 == LitExp (IntLit 1) then e2 else e3;
+  evalExp $ if n1 == ConExp (Con "True") then e2 else e3;
 }
 
 evalExp (OAdd e1 e2) = addEmptyEnv $ binOp e1 e2 (+)
@@ -87,7 +87,7 @@ evalExp (ONeg e1) = addEmptyEnv $ do
 evalExp (EOpE e1 compOp e2) = addEmptyEnv $ do {
   n1 <- evalExpVal e1;
   n2 <- evalExpVal e2;
-  return $ if (n1 `evalOp` n2) then LitExp (IntLit 1) else LitExp (IntLit 0);
+  return $ ConExp $ Con $ if (n1 `evalOp` n2) then "True" else "False";
 } where evalOp = case compOp of {
   OEq  -> (==);
   ONeq -> (/=);
@@ -97,8 +97,17 @@ evalExp (EOpE e1 compOp e2) = addEmptyEnv $ do {
   OGte -> (>=);
 }
 
-evalExp (OAnd e1 e2) = addEmptyEnv $ binOp e1 e2 (*)
-evalExp (OOr e1 e2) = addEmptyEnv $ binOp e1 e2 (\x y -> (x + y + 1) `div` 2)
+evalExp (OAnd e1 e2) = do
+  (ConExp (Con b1)) <- evalExpVal e1
+  (ConExp (Con b2)) <- evalExpVal e2
+  let ans = if b1 == "True" && b2 == "True" then "True" else "False"
+  addEmptyEnv $ return $ ConExp $ Con ans
+
+evalExp (OOr e1 e2) = do
+  (ConExp (Con b1)) <- evalExpVal e1
+  (ConExp (Con b2)) <- evalExpVal e2
+  let ans = if b1 == "True" || b2 == "True" then "True" else "False"
+  addEmptyEnv $ return $ ConExp $ Con ans
 
 -- | Get 'static expression' from environment and evaluate it.
 evalExp (VarExp var) = do {
