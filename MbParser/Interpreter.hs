@@ -1,4 +1,4 @@
-module Interpreter where
+module Main where
 
 import System.Environment ( getArgs )
 import System.IO ( stdin, hGetContents )
@@ -12,8 +12,8 @@ import ErrM
 
 runInterpreter :: String -> IO ()
 runInterpreter input = case result of
-    Ok s -> putStrLn s
-    Bad s -> putStrLn $ "                BAD!!!!!!!!!!!!!!!!!!!\n" ++ s
+    Ok s -> return ()
+    Bad s -> putStrLn $ "ERROR: " ++ s
   where result = do {
     abstractSyntax <- pBody $ myLexer input;
     interpretBody $ abstractSyntax;

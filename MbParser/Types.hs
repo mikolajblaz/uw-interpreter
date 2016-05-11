@@ -82,6 +82,7 @@ checkType de (Lambda ((Sign v t):signs) exp) = do
   env <- ask
   let recExp = if signs == [] then exp else Lambda signs exp
   recT <- local (assignStaticVal v (t, env)) $ checkType de recExp
+  fail $ show $ assignStaticVal v (t, env) env
   return $ FunType t recT
 
 checkType de (Let decls e) = do {

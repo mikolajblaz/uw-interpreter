@@ -17,7 +17,7 @@ class EnvVal val where
   getVal :: Decl -> Maybe val
 
 -- | Whole environment
-data Env val = Env (OuterEnv val) (LocalEnv val)
+data Env val = Env (OuterEnv val) (LocalEnv val) deriving (Show)
 -- | Local environment includes variables introduced by the last 'let'
 type LocalEnv val = Map.Map Var val
 -- | Outer environment includes other variables
@@ -78,7 +78,7 @@ localToOuterEnv localEnv outerEnv = Map.foldrWithKey (insertVar (Env outerEnv lo
 -- old local environment with old outer environment and by setting
 -- the given local environment as a new one
 expandEnv :: LocalEnv val -> Env val -> Env val
-expandEnv lEnv (Env oldOEnv oldLEnv) = Env (localToOuterEnv oldLEnv oldOEnv) lEnv
+expandEnv lEnv (Env oldOEnv oldLEnv) = Env (localToOuterEnv lEnv (localToOuterEnv oldLEnv oldOEnv)) Map.empty
 
 -- | Turn list of declaration to local environment and expand given environment
 evalDecls :: EnvVal val => [Decl] -> Env val -> Err (Env val)

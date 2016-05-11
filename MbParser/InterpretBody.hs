@@ -12,16 +12,14 @@ import StdLib
 import Translations
 import Types
 
-failure :: Show a => a -> Err String
-failure x = Bad $ "Undefined case: " ++ show x
 
 -- | Main interpreting function
 interpretBody :: Body -> Err String
 interpretBody (Body topdecls) = do
-    dataEnv <- buildDataEnv (stdLibDecls ++ dataDecls)
+    dataEnv <- buildDataEnv dataDecls
     interpretMain decls dataEnv
   where
-    (dataDecls, decls) = Data.List.partition isDataDecl topdecls
+    (dataDecls, decls) = Data.List.partition isDataDecl $ stdLibDecls ++ topdecls
     isDataDecl (DataDecl _) = True
     isDataDecl _  = False
 

@@ -131,9 +131,10 @@ evalExp fapp@(FApp e1 e2) = do
   (ev1, env1) <- evalExp e1
   let sExp2 = (e2, env)
   case ev1 of
-    -- if ev1 is a lambda, it is a normal function application
+    -- if ev1 is a 1-arg lambda, it is a normal function application
     Lambda ((Sign v t):[]) exp -> let eEnv1 = assignStaticVal v sExp2 env1 in
       local (const eEnv1) $ evalExp exp
+    -- if ev1 is a  more arg lambda, return lambda of lower order
     Lambda ((Sign v t):vars) exp -> let eEnv1 = assignStaticVal v sExp2 env1 in
       return (Lambda vars exp, eEnv1)
     -- if ev1 is a partially constructed type, we leave it as FApp
