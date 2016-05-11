@@ -8,43 +8,6 @@ import ErrM
 
 import Environment
 
--- | Data environment
-type DataEnv = Map.Map Con (Con, [Type])
-
--- | Build data environment basing on 'data' declarations
-buildDataEnv :: [TopDecl] -> Err DataEnv
-buildDataEnv ds = do
-  foldM (flip buildData) Map.empty ds
-
-buildData :: TopDecl -> DataEnv -> Err DataEnv
-buildData (DataDecl (Data con constrs)) env = foldM (insertCon con) env constrs
-  where
-    insertCon :: Con -> DataEnv -> Constr -> Err DataEnv
-    insertCon dataCon env (DataCon con ts) = if Map.member con env
-      then fail $ "TypeCheckError: Type constructor " ++ show con ++ "already declared"
-      else return $ Map.insert con (dataCon, ts) env
-
-
-getConData :: Con -> DataEnv -> Err (Con, [Type])
-getConData con env = case Map.lookup con env of
-  Nothing -> fail $ "TypeCheckError: Undeclared constructor " ++ show con
-  Just dat -> return $ dat
-
-getConTypes :: Con -> DataEnv -> Err [Type]
-getConTypes con env = getConData con env >>= return . snd
-
--- | Get type of type constructor
-conToType :: Con -> DataEnv -> Err Type
-conToType con env = do
-  (dataCon, ts) <- getConData con env
-  return $ generateConType con ts dataCon
-
--- | Get type of type constructor based on list of type arguments and target
--- data type
-generateConType :: Con -> [Type] -> Con -> Type
-generateConType con [] dataCon = TyCon dataCon
-generateConType con (t:ts) dataCon = FunType t $ generateConType con ts dataCon
-
 ----------------- Static type check ---------------------------
 type StaticType = StaticVal Type
 type TypeM = EvalM Type
@@ -157,7 +120,7 @@ checkType (Case e alts) = do
   return t
 
 -- TODO
-checkType (ConExp con) = case conToType con Map.empty of
+checkType (ConExp con) = case conToType con of
   Ok t -> return t
   Bad err -> fail err
 
@@ -194,7 +157,7 @@ matchAgainstType t pat lEnv = do
       then foldM (flip . uncurry $ matchAgainstType) lEnv $ zip (t:ts) (p:ps)
       else fail failMsg
     (ConPat con1 ps, TyCon con2) -> do
-      (dataCon, ts) <- getConData con1 Map.empty -- TODO
+      (dataCon, ts) <- getConData con1 -- TODO
       if dataCon == con2
         then foldM (flip . uncurry $ matchAgainstType) lEnv $ zip ts ps
         else fail failMsg
