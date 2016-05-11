@@ -103,7 +103,7 @@ buildData (DataDecl (Data con constrs)) env = foldM (insertCon con) env constrs
   where
     insertCon :: Con -> DataEnv -> Constr -> Err DataEnv
     insertCon dataCon env (DataCon con ts) = if Map.member con env
-      then fail $ "TypeCheckError: Type constructor " ++ show con ++ "already declared"
+      then fail $ "TypeCheckError: Type constructor " ++ show con ++ " already declared"
       else return $ Map.insert con (dataCon, ts) env
 
 
