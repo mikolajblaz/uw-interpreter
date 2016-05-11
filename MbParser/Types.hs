@@ -24,12 +24,20 @@ buildData (DataDecl (Data con constrs)) env = foldM (insertCon con) env constrs
       then fail $ "TypeCheckError: Type constructor " ++ show con ++ "already declared"
       else return $ Map.insert con (dataCon, ts) env
 
+
+getConData :: Con -> DataEnv -> Err (Con, [Type])
+getConData con env = case Map.lookup con env of
+  Nothing -> fail $ "TypeCheckError: Undeclared constructor " ++ show con
+  Just dat -> return $ dat
+
+getConTypes :: Con -> DataEnv -> Err [Type]
+getConTypes con env = getConData con env >>= return . snd
+
 -- | Get type of type constructor
 conToType :: Con -> DataEnv -> Err Type
 conToType con env = do
-  case Map.lookup con env of
-    Nothing -> fail $ "TypeCheckError: Undeclared constructor " ++ show con
-    Just (dataCon, ts) -> return $ generateConType con ts dataCon
+  (dataCon, ts) <- getConData con env
+  return $ generateConType con ts dataCon
 
 -- | Get type of type constructor based on list of type arguments and target
 -- data type
@@ -185,7 +193,12 @@ matchAgainstType t pat lEnv = do
     (TuplePat p ps, TupleType t ts) -> if length ps == length ts
       then foldM (flip . uncurry $ matchAgainstType) lEnv $ zip (t:ts) (p:ps)
       else fail failMsg
-    _ -> fail failMsg  -- TODO
+    (ConPat con1 ps, TyCon con2) -> do
+      (dataCon, ts) <- getConData con1 Map.empty -- TODO
+      if dataCon == con2
+        then foldM (flip . uncurry $ matchAgainstType) lEnv $ zip ts ps
+        else fail failMsg
+    _ -> fail failMsg
 
 ------------------- Declaration types ----------------------
 -- | Compare type of declared expression with type of (previously
