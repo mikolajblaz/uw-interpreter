@@ -1,0 +1,97 @@
+-- Przykładowy plik w języku MB prezentujący możliwe konstrukcje
+
+-- Typy algebraiczne
+data TakNie = Tak | Nie;
+
+-- ... rekurencyjne
+data IntTree = Empty | Node Int IntTree IntTree;
+
+-- Arytmetyka
+a :: Int;
+b :: (Int, Int);
+z :: Int;
+a = 4;
+b = (0, 0);
+z = if 3 < 5 then a * 3 + 2 - 4 / (5 - 0) else case b of {
+  (1, 1) -> 9;
+  (k, 0) -> k;
+  _ -> let {b :: Int; b = 10} in b end
+} end;
+
+-- Funkcje 0-argumentowe
+c :: Int;
+d :: Bool;
+c = 7;
+d = True;
+
+-- Funkcje 1- i wieloargumentowe
+id :: Int -> Int;
+id = \x :: Int. x end;
+pid :: Int -> Int -> Int;
+pid = \x :: Int, y :: Int. y end;
+const :: Int -> Int -> Int;
+const = \x :: Int, y :: Int. x end;
+
+
+-- Rekurencja
+silnia :: Int -> Int;
+silnia = \n :: Int. if n == 0 then 1 else n * silnia (n - 1) end end;
+
+-- Wbudowane IntEither
+or :: IntEither -> Bool;
+or = \x :: IntEither. case x of {
+  Left x -> x > 0;
+  Right x -> x > 0;
+} end;
+
+-- Wbudowane IntMaybe
+fromJust :: IntMaybe -> Int;
+fromJust = \x :: IntMaybe. case x of {
+  Just y -> y
+} end;
+
+-- Listy
+-- wbudowany typ: data List a = Nil | Cons Int List
+-- z funkcjami head, tail, empty
+true3 :: Bool;
+true3 = head (Cons 3 (Cons 1 Nil)) == 3;
+
+-- Pattern matching + krotki
+fst :: (Int, Int) -> Int;
+fst = \x :: (Int, Int). case x of {(x, y) -> x} end;
+snd :: (Int, Int) -> Int;
+snd = \x :: (Int, Int). case x of {(x, y) -> y} end;
+
+-- Pattern matching wielopoziomowy
+sumTuple :: (IntMaybe, IntTree) -> IntMaybe;
+sumTuple = \x :: (IntMaybe, IntTree). case x of {
+  (Nothing, _)  -> Nothing;
+  (_, Empty) -> Nothing;
+  (Just a, Node b _ _) -> Just (a + b);
+} end;
+
+data FunList = FNil | FCons (Int -> Int) FunList;
+
+-- Funkcje wyższego rzędu
+map :: ((Int -> Int) -> Int) -> FunList -> List;
+map = \f :: ((Int -> Int) -> Int), l :: FunList. case l of {
+  FNil -> Nil;
+  FCons g gs -> Cons (f g) (map f gs)
+} end;
+
+l :: FunList;
+l = FCons (\x::Int.x + 3 end) (FCons id (FCons (const a) FNil));
+
+tup :: List;
+tup = map (\f :: Int -> Int. f 37 end) l;
+
+-- Częściowa aplikacja
+one :: Int -> Int;
+one = const 1;
+
+true :: Bool;
+true = one 3 == 1;
+
+
+main :: Bool;
+main = true && true3;

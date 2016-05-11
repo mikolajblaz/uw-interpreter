@@ -1,11 +1,10 @@
-main :: (Int, Int, Int);
+main :: Int;
 main = let {
-  x :: IntList;
-  x = map (\f :: Int -> Int. f 37 end) l;
-} in (head x, head (tail x), head (tail (tail x))) end;
+  x :: List;
+  x = map (\h :: (Int -> Int). h 37 end) l;
+} in head (tail x) end;
 
-data FunList = Nil | Cons (Int -> Int) FunList;
-data IntList = INil | ICons Int IntList;
+data FunList = FNil | FCons (Int -> Int) FunList;
 
 a :: Int;
 a = 4;
@@ -19,22 +18,11 @@ const = \x :: Int, y :: Int. x end;
 
 
 l :: FunList;
-l = Cons (\x::Int.x + 3 end) (Cons id (Cons (const a) Nil));
-
-head :: IntList -> Int;
-head = \x :: IntList. case x of {
-  ICons int _ -> int;
-} end;
-
-tail :: IntList -> IntList;
-tail = \x :: IntList. case x of {
-  INil -> INil;
-  ICons _ t -> t;
-} end;
+l = FCons (\x::Int.x + 3 end) (FCons id (FCons (const a) FNil));
 
 equal :: FunList -> FunList -> Bool;
 equal = \l1 :: FunList, l2 :: FunList. case (l1, l2) of {
-  (Nil, Nil) -> True;
+  (FNil, FNil) -> True;
   (_, _) -> False
 } end;
 
@@ -44,8 +32,8 @@ not = \b :: Bool. case b of {
   False -> True
 } end;
 
-map :: ((Int -> Int) -> Int) -> FunList -> IntList;
+map :: ((Int -> Int) -> Int) -> FunList -> List;
 map = \f :: ((Int -> Int) -> Int), l :: FunList. case l of {
-  Nil -> INil;
-  Cons g gs -> ICons (f g) (map f gs)
+  FNil -> Nil;
+  FCons g gs -> Cons (f g) Nil
 } end;

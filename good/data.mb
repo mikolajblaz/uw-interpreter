@@ -1,0 +1,42 @@
+main :: Bool;
+main = fromJust j4 + head l + head (tail l) == 17 && True && equal Nil (tail Nil) &&
+       equal (Cons 7 (Cons 6 (Cons 5 Nil))) l &&
+       not ((equal l (tail l)) || equal Nil (Cons 1 Nil));
+
+j4 :: IntMaybe;
+j4 = Just 4;
+
+fromJust :: IntMaybe -> Int;
+fromJust = \x :: IntMaybe. case x of {
+  Just y -> y;
+} end;
+
+nil :: List;
+nil = Nil;
+
+l :: List;
+l = Cons 7 (Cons 6 (Cons 5 Nil));
+
+-- head :: List -> Int;
+-- head = \x :: List. case x of {
+--   Cons int _ -> int;
+-- } end;
+--
+-- tail :: List -> List;
+-- tail = \x :: List. case x of {
+--   Nil -> Nil;
+--   Cons _ t -> t;
+-- } end;
+
+equal :: List -> List -> Bool;
+equal = \l1 :: List, l2 :: List. case (l1, l2) of {
+  (Nil, Nil) -> True;
+  (Cons x xs, Cons y ys) -> x == y && equal xs ys;
+  (_, _) -> False
+} end;
+
+not :: Bool -> Bool;
+not = \b :: Bool. case b of {
+  True -> False;
+  False -> True
+} end;

@@ -1,0 +1,73 @@
+-- Funkcje i pattern matching
+
+main :: Bool;
+main = id a == 4 && pid 60 7 == 7 && const 60 7 == 60 && b == 6 && c == 21 &&
+       d == 38 && e == 7 && f == 7 && lst == 12 && eight 10 == 8 && rec 7 == 0 &&
+       r == 8 && silnia 4 == 24 && fst (3, 4/0) == 3 && fstt (1, (4, 5/0)) == 1 &&
+       const 4 (5/0) == 4;
+
+a :: Int;
+b :: Int;
+c :: Int;
+d :: Int;
+e :: Int;
+f :: Int;
+z :: Int;
+
+a = 4;
+id :: Int -> Int;
+id = \x :: Int. x end;
+pid :: Int -> Int -> Int;
+pid = \x :: Int, y :: Int. y end;
+const :: Int -> Int -> Int;
+const = \x :: Int, y :: Int. x end;
+
+b = case 4 of {
+  k -> k + 2;
+};
+
+c = case (3, 7) of {
+  (s, t) -> s * t;
+};
+
+d = case (38, 7) of {
+  r -> fst r;
+};
+
+fst :: (Int, Int) -> Int;
+fst = \x :: (Int, Int). case x of {(x, y) -> x} end;
+snd :: (Int, Int) -> Int;
+snd = \x :: (Int, Int). case x of {(x, y) -> y} end;
+
+fstt :: (Int, (Int, Int)) -> Int;
+fstt = \x :: (Int, (Int, Int)). case x of {(x, y) -> x} end;
+
+e = case (45, 54) of {
+  (45, 55) -> 6;
+  (45, 54) -> 7
+};
+
+lst :: Int;
+lst = case [3, 4, 5] of {[x, y, z] -> x + y + z};
+
+f = case (45, 54) of {
+  (x, y) -> 7;
+  (1, 1) -> 8
+};
+
+undef :: Int;
+undef = case 7 of {
+  4 -> 5;
+};
+
+eight :: Int -> Int;
+eight = const 8;
+
+rec :: Int -> Int;
+rec = \x :: Int. if x == 0 then x else rec (x - 1) end end;
+
+silnia :: Int -> Int;
+silnia = \n :: Int. if n == 0 then 1 else n * silnia (n - 1) end end;
+
+r :: Int;
+r = if 1 == 2 then 3 else eight 2 end;

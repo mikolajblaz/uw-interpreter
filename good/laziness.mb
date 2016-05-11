@@ -1,0 +1,10 @@
+main :: Bool;
+main = const 4 (5/0) == 4 && snd (3/0, 78) == fst (78, 0/0);
+
+const :: Int -> Int -> Int;
+const = \x :: Int, y :: Int. x end;
+
+fst :: (Int, Int) -> Int;
+fst = \x :: (Int, Int). case x of {(x, y) -> x} end;
+snd :: (Int, Int) -> Int;
+snd = \x :: (Int, Int). case x of {(x, y) -> y} end;

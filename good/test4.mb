@@ -1,4 +1,8 @@
-main :: String;
-main = "ghf";
+x :: Char;
+x = 'a';
 
-m :: Int;
+id :: Int -> Int;
+id = \x :: Int. x end;
+
+main :: Int;
+main = id 5;
