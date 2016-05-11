@@ -176,9 +176,12 @@ matchAgainstType t pat lEnv = do
     _ -> fail failMsg  -- TODO
 
 ------------------- Declaration types ----------------------
+-- | Compare type of declared expression with type of (previously
+-- stored in environment) signature
 checkDeclType :: Decl -> TypeM ()
 checkDeclType (Signature _) = return ()
 checkDeclType (VarDecl var exp) = do
+  -- expected type of a variable is taken from environment
   t1 <- checkType $ VarExp var
   t2 <- checkType exp
   simpleCheck t1 t2

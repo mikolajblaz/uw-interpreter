@@ -23,6 +23,7 @@ type ExpM = EvalM Exp
 --   empty = mzero
 --   (<|>) = mplus
 
+--------------------- Helper functions --------------------
 
 trueExp, falseExp :: Exp
 trueExp = ConExp $ Con "True"
@@ -45,13 +46,25 @@ addEnv me = do
   e <- me
   return (e, env)
 
+--------------------- Expressions evaluation ---------------------
+-- We evaluate each expression to the point if usability.
+-- To ensure laziness we stop evaluation at expressions:
+-- lambda, literals, tuples, lists, type constructors
+-- (and sometimes function applications, see below)
 
 runExp :: Exp -> Env Exp -> Err Exp
 runExp exp env = liftM fst $ runReaderT (evalExp exp) env
 
 -- | Evaluate expression in an environment hidden in 'Reader' monad
 evalExp :: Exp -> ExpM StaticExp
--- | Extend environment by evaluating let declarations
+-- | Not evaluating if not needed - ensure laziness
+evalExp lam@(Lambda _ _) = addEnv $ return lam
+evalExp lit@(LitExp _) = addEmptyEnv $ return lit
+evalExp tup@(TupleExp _ _) = addEnv $ return tup
+evalExp lst@(ListExp _) = addEnv $ return lst
+evalExp ce@(ConExp _) = addEmptyEnv $ return ce
+
+-- | Normal evaluation
 evalExp (If e1 e2 e3) = do {
   n1 <- evalExpVal e1;
   evalExp $ if n1 == LitExp (IntLit 1) then e2 else e3;
@@ -95,6 +108,7 @@ evalExp (VarExp var) = do {
     Bad err -> fail err
 }
 
+-- | Extend environment by evaluating let declarations
 evalExp (Let decls e) = do {
 env <- ask;
 case evalDecls decls env of
@@ -103,21 +117,19 @@ case evalDecls decls env of
 }
 
 -- | Full or partial application of lambda expression 'e1' to 'e2'
-evalExp (FApp e1 e2) = do
+evalExp fapp@(FApp e1 e2) = do
   env <- ask;
-  -- e1 must be a lambda
-  (Lambda ((Sign v t):vars) exp, env1) <- evalExp e1
-  -- bind expression e2 to variable v
-  let eEnv1 = assignStaticVal v (e2, env) env1
-  if vars == []
-    then local (const eEnv1) $ evalExp exp
-    else return (Lambda vars exp, eEnv1)
-
--- | Not evaluating if not needed
-evalExp lam@(Lambda _ _) = addEnv $ return lam
-evalExp lit@(LitExp _) = addEmptyEnv $ return lit
-evalExp tup@(TupleExp _ _) = addEnv $ return tup
-evalExp lst@(ListExp _) = addEnv $ return lst
+  (ev1, env1) <- evalExp e1
+  let sExp2 = (e2, env)
+  case ev1 of
+    -- if ev1 is a lambda, it is a normal function application
+    Lambda ((Sign v t):[]) exp -> let eEnv1 = assignStaticVal v sExp2 env1 in
+      local (const eEnv1) $ evalExp exp
+    Lambda ((Sign v t):vars) exp -> let eEnv1 = assignStaticVal v sExp2 env1 in
+      return (Lambda vars exp, eEnv1)
+    -- if ev1 is a partially constructed type, we leave it as FApp
+    ConExp _ -> addEnv $ return fapp
+    FApp _ _ -> addEnv $ return fapp
 
 evalExp (Case exp alts) = do
     -- Try to match expression against patterns one by one.
@@ -135,10 +147,8 @@ evalExp (Case exp alts) = do
         Just lEnv -> return $ Just (e2, expandEnv lEnv env)
         Nothing -> return Nothing
 
--------- TODO: not implemented yet
 
-evalExp (ConExp gCon) = undefined
-
+-- | Binary operations
 binOp :: Exp -> Exp -> (Integer -> Integer -> Integer) -> ExpM Exp
 binOp e1 e2 op = do
   LitExp (IntLit n1) <- evalExpVal e1
@@ -164,6 +174,7 @@ matchAgainstExp exp pat jLEnv@(Just lEnv) = case pat of
       (LitPat lp, LitExp le) -> return $ if lp == le then jLEnv else Nothing
       (ListPat ps, ListExp es) -> foldM (flip . uncurry $ matchAgainstExp) jLEnv $ zip es ps
       (TuplePat p ps, TupleExp e es) -> foldM (flip . uncurry $ matchAgainstExp) jLEnv $ zip (e:es) (p:ps)
-      (ZeroConPat con1, ConExp con2) -> return $ if con1 == con2 then jLEnv else Nothing
-      (ManyConPat con [p], FApp e1 e2) -> foldM (flip . uncurry $ matchAgainstExp) jLEnv $ zip (e2:e1) (p:ZeroConPat con)
+      (ConPat con1 [], ConExp con2) -> return $ if con1 == con2 then jLEnv else Nothing
+      (ConPat con ps, FApp e1 e2) ->
+        foldM (flip . uncurry $ matchAgainstExp) jLEnv $ [(e1, ConPat con (init ps)), (e2, last ps)]
       _ -> return Nothing  -- TODO

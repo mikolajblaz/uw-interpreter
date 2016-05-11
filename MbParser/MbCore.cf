@@ -97,10 +97,9 @@ OGte.        CompOp ::= ">=" ;
 
 ---- Patterns ----
 
-ManyConPat.  Pat ::= Con [Pat1] ;                      --- arity con > 0
+ConPat.      Pat ::= Con [Pat1] ;
 
 VarPat.      Pat1 ::= Var ;
-ZeroConPat.  Pat1 ::= Con ;                            --- arity con = 0
 LitPat.      Pat1 ::= Literal ;
 WildCard.    Pat1 ::= "_" ;
 TuplePat.    Pat1 ::= "(" Pat "," [Pat] ")" ;           --- tuple
@@ -108,7 +107,7 @@ ListPat.     Pat1 ::= "[" [Pat] "]" ;                   --- list
 
 coercions Pat 1;
 separator nonempty Pat "," ;
-separator nonempty Pat1 "" ;
+separator Pat1 "" ;
 
 
 
