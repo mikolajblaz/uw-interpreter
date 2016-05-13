@@ -4,5 +4,14 @@ x = 'a';
 id :: Int -> Int;
 id = \x :: Int. x end;
 
-main :: Int;
-main = id 5;
+main :: Bool;
+main = if id 5 == 5 then f2 100 == 202 else False end;
+
+-- Statyczne wiązanie
+st :: Int;
+st = 2;
+f1 :: Int -> Int;
+f1 = \x :: Int. x + st end;
+f2 :: Int -> Int;
+f2 = \st :: Int. f1 (st + st) end;
+-- f2 100 = 202

@@ -104,7 +104,7 @@ evalExp (VarExp var) = do {
   sExp <- asks $ lookupVar var;
   case sExp of
     Ok (e, env) -> local (const env) $ evalExp e
-    Bad err -> fail err
+    --Bad err -> fail err
 }
 
 -- | Extend environment by evaluating let declarations

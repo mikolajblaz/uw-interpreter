@@ -43,7 +43,8 @@ lookupVar var env@(Env oEnv lEnv) = case Map.lookup var lEnv of
 
 -- | Insert static expression directly to environment
 assignStaticVal :: Var -> StaticVal val -> Env val -> Env val
-assignStaticVal v sVal (Env oEnv lEnv) = Env (Map.insert v sVal oEnv) lEnv
+assignStaticVal v sVal (Env oEnv lEnv) = let tmpOEnv = (localToOuterEnv lEnv oEnv) in
+  Env (Map.insert v sVal tmpOEnv) Map.empty
 
 
 ----------------------- Declarations evaluation ------------------------
