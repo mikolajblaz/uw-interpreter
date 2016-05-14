@@ -35,5 +35,5 @@ not = \b :: Bool. case b of {
 map :: ((Int -> Int) -> Int) -> FunList -> List;
 map = \f :: ((Int -> Int) -> Int), l :: FunList. case l of {
   FNil -> Nil;
-  FCons g gs -> Cons (f g) Nil
+  FCons g gs -> Cons (f g) (map f gs)
 } end;

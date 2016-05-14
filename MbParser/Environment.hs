@@ -7,7 +7,6 @@ import Data.Maybe
 
 import AbsMbCore
 import ErrM
-import PrintMbCore
 
 -- | A value that can be kept in an environment
 -- Instances: Exp and Type

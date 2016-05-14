@@ -1,0 +1,11 @@
+-- złożenie funkcji
+main :: Bool;
+main = comp id (const 7) 45 == 7;
+
+comp :: (Int -> Int) -> (Int -> Int) -> (Int -> Int);
+comp = \f :: Int -> Int, g :: Int -> Int. \x :: Int. f (g x) end end;
+
+id :: Int -> Int;
+id = \x :: Int. x end;
+const :: Int -> Int -> Int;
+const = \x :: Int, y :: Int. x end;

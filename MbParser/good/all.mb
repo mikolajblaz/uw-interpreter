@@ -1,5 +1,14 @@
 -- Przykładowy plik w języku MB prezentujący możliwe konstrukcje
 
+main :: Bool;
+main = a == 4 && z == 14 && c == 7 && d &&
+       id (-4) == -4 && pid 4 10 == 10 && const 9 10 == 9 && silnia 4 == 24 &&
+       or (Left 4) && if or (Left (-1)) then False else True end &&
+       fromJust (Just 6) == 6 && true3 && fst b == 0 && snd (5, 60) == 60 &&
+       fromJust (sumTuple (Just (-5), Node 5 (Node 4 Empty Empty) Empty)) == 0 &&
+       head tup == 40 && head (tail tup) == 37 && head (tail (tail tup)) == a &&
+       true && one 56 == 1;
+
 -- Typy algebraiczne
 data TakNie = Tak | Nie;
 
@@ -91,7 +100,3 @@ one = const 1;
 
 true :: Bool;
 true = one 3 == 1;
-
-
-main :: Bool;
-main = true && true3;
