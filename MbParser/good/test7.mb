@@ -1,0 +1,35 @@
+main :: Bool;
+main = true1 && true2;
+
+a :: Int;
+a = 4;
+id :: Int -> Int;
+id = \x :: Int. x end;
+pid :: Int -> Int -> Int;
+pid = \x :: Int, y :: Int. y end;
+const :: Int -> Int -> Int;
+const = \x :: Int, y :: Int. x end;
+
+app :: (Int -> Int) -> Int -> Int;
+app = \f :: Int -> Int, x :: Int. f x end;
+
+true1 :: Bool;
+true1 = app (const 10) 9 == 10;
+
+f :: Int -> Int;
+f = let {
+  x :: Int;
+  x = 3;
+} in let {
+    y :: Int;
+    y = 4;
+  } in \z :: Int. x + y end end
+end;
+
+x :: Int;
+x = 100;
+y :: Int;
+y = 1000;
+
+true2 :: Bool;
+true2 = f y == 7;
