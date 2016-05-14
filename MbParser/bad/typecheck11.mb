@@ -1,0 +1,6 @@
+-- different types in nested pattern
+main :: Int;
+main = case Cons 1 (Cons 4 Nil) of {
+  Nil -> 6;
+  Cons _ (Cons _ 78) -> 7
+};

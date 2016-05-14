@@ -1,0 +1,6 @@
+-- same variable name in case pattern
+main :: Int;
+main = case (1, 1) of {
+  (x, x) -> 6;
+  _ -> 7
+};

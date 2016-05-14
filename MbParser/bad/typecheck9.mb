@@ -1,0 +1,3 @@
+-- same variable name
+main :: Int;
+main :: Int;

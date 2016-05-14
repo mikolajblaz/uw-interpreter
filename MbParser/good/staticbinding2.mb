@@ -1,0 +1,17 @@
+x :: Int;
+x = 100;
+y :: Int;
+y = 1000;
+
+main :: Bool;
+main = f y == 7;
+
+f :: Int -> Int;
+f = let {
+  x :: Int;
+  x = 3;
+} in let {
+    y :: Int;
+    y = 4;
+  } in \z :: Int. x + y end end
+end;
