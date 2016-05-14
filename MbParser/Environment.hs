@@ -7,6 +7,7 @@ import Data.Maybe
 
 import AbsMbCore
 import ErrM
+import PrintMbCore
 
 -- | A value that can be kept in an environment
 -- Instances: Exp and Type
@@ -60,6 +61,11 @@ setLocalVar var exp localEnv = if Map.member var localEnv
   then Bad $ "TypeCheckError: Variable " ++ show var ++ " defined twice"
   else Ok $ Map.insert var exp localEnv
 
+setOuterVar :: Var -> StaticVal val -> OuterEnv val -> Err (OuterEnv val)
+setOuterVar var sVal outerEnv = if Map.member var outerEnv
+  then Bad $ "TypeCheckError: Variable " ++ show var ++ " defined twice"
+  else Ok $ Map.insert var sVal outerEnv
+
 -- | Turn list of declarations to a map, where each varibale has its own
 -- expression as value
 collectLocalDecl :: EnvVal val => [Decl] -> Err (LocalEnv val)
@@ -80,6 +86,10 @@ localToOuterEnv localEnv outerEnv = Map.foldrWithKey (insertVar (Env outerEnv lo
 -- the given local environment as a new one
 expandEnv :: LocalEnv val -> Env val -> Env val
 expandEnv lEnv (Env oldOEnv oldLEnv) = Env (localToOuterEnv lEnv (localToOuterEnv oldLEnv oldOEnv)) Map.empty
+
+-- | Add outer environment to existing environment
+expandOuterEnv :: OuterEnv val -> Env val -> Env val
+expandOuterEnv oEnv (Env oldOEnv oldLEnv) = Env (Map.union oEnv (localToOuterEnv oldLEnv oldOEnv)) Map.empty
 
 -- | Turn list of declaration to local environment and expand given environment
 evalDecls :: EnvVal val => [Decl] -> Env val -> Err (Env val)

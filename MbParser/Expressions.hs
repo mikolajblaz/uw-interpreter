@@ -142,9 +142,9 @@ evalExp (Case exp alts) = do
     tryMatch :: Exp -> Alt -> ExpM (Maybe StaticExp)
     tryMatch e1 (Alt pat e2) = do
       env <- ask
-      lEnv <- matchAgainstExp e1 pat $ Just Map.empty
-      case lEnv of
-        Just lEnv -> return $ Just (e2, expandEnv lEnv env)
+      oEnv <- matchAgainstExp e1 pat $ Just Map.empty
+      case oEnv of
+        Just oEnv -> return $ Just (e2, expandOuterEnv oEnv env)
         Nothing -> return Nothing
 
 
@@ -160,22 +160,24 @@ binOp e1 e2 op = do
 ------------- Pattern matching -------------------
 -- | Try to match expression against pattern.
 -- If pattern is a varibale or wildcard, there is no need to evaluate expression
-matchAgainstExp :: Exp -> Pat -> Maybe (LocalEnv Exp) -> ExpM (Maybe (LocalEnv Exp))
+matchAgainstExp :: Exp -> Pat -> Maybe (OuterEnv Exp) -> ExpM (Maybe (OuterEnv Exp))
 matchAgainstExp _ _ Nothing = return Nothing
-matchAgainstExp exp pat jLEnv@(Just lEnv) = case pat of
-  VarPat var -> case setLocalVar var exp lEnv of
-    Ok newEnv -> return $ Just newEnv
-    Bad err -> return Nothing
-  WildCard -> return jLEnv
-  -- otherwise expression must be evaluated
-  _ -> do
-    (evaledExp, env) <- evalExp exp
-    case (pat, evaledExp) of
-      (LitPat lp, LitExp le) -> return $ if lp == le then jLEnv else Nothing
-      (ListPat ps, ListExp es) -> foldM (flip . uncurry $ matchAgainstExp) jLEnv $ zip es ps
-      (TuplePat p ps, TupleExp e es) -> foldM (flip . uncurry $ matchAgainstExp) jLEnv $ zip (e:es) (p:ps)
-      (ConPat con1 [], ConExp con2) -> return $ if con1 == con2 then jLEnv else Nothing
-      (ConPat con1 [], _) -> return Nothing
-      (ConPat con ps, FApp e1 e2) ->
-        foldM (flip . uncurry $ matchAgainstExp) jLEnv $ [(e1, ConPat con (init ps)), (e2, last ps)]
-      _ -> return Nothing
+matchAgainstExp exp pat jOEnv@(Just oEnv) = do
+  env <- ask
+  case pat of
+    VarPat var -> case setOuterVar var (exp, env) oEnv of
+      Ok newEnv -> return $ Just newEnv
+      Bad err -> return Nothing
+    WildCard -> return jOEnv
+    -- otherwise expression must be evaluated
+    _ -> do
+      (evaledExp, env) <- evalExp exp
+      case (pat, evaledExp) of
+        (LitPat lp, LitExp le) -> return $ if lp == le then jOEnv else Nothing
+        (ListPat ps, ListExp es) -> local (const env) $ foldM (flip . uncurry $ matchAgainstExp) jOEnv $ zip es ps
+        (TuplePat p ps, TupleExp e es) -> local (const env) $ foldM (flip . uncurry $ matchAgainstExp) jOEnv $ zip (e:es) (p:ps)
+        (ConPat con1 [], ConExp con2) -> return $ if con1 == con2 then jOEnv else Nothing
+        (ConPat con1 [], _) -> return Nothing
+        (ConPat con ps, FApp e1 e2) ->
+          local (const env) $ foldM (flip . uncurry $ matchAgainstExp) jOEnv $ [(e1, ConPat con (init ps)), (e2, last ps)]
+        _ -> return Nothing
