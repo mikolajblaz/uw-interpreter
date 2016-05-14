@@ -5,7 +5,7 @@ id :: Int -> Int;
 id = \x :: Int. x end;
 
 main :: Bool;
-main = if id 5 == 5 then f2 100 == 202 else False end;
+main = id 5 == 5 && true2;
 
 -- Statyczne wiązanie
 st :: Int;
@@ -15,3 +15,7 @@ f1 = \x :: Int. x + st end;
 f2 :: Int -> Int;
 f2 = \st :: Int. f1 (st + st) end;
 -- f2 100 = 202
+-- f2 100 /= 300
+-- f2 100 /= 6
+true2 :: Bool;
+true2 = f2 100 == 202;
