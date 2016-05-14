@@ -1,0 +1,29 @@
+main :: Bool;
+main = true1 && true2 && true3; -- && undef 0 == "error" && x == "error"
+
+true1 :: Bool;
+true1 = case 5/0 of {
+  k -> 1;
+} == 1;
+
+true2 :: Bool;
+true2 = case Just (4/0) of {
+  Just _ -> 1;
+  Nothing -> 0
+} == 1;
+
+
+-- oczywiście wyrażenia w case i lambdach nie są ewaluowane bez potrzeby
+true3 :: Bool;
+true3 = case 1 of {
+  0 -> 0/0;
+  1 -> 7;
+  _ -> 2/0;
+} == 7;
+
+undef :: Int -> Int;
+undef = \x :: Int. x/0 end;
+
+-- wartość zmiennych również nie jest ewaluowana bez potrzeby
+x :: Int;
+x = 3/0;
